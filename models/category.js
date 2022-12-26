@@ -2,6 +2,7 @@
 const {
   Model
 } = require('sequelize');
+const service = require('./service');
 module.exports = (sequelize, DataTypes) => {
   class Categories extends Model {
     /**
@@ -10,7 +11,9 @@ module.exports = (sequelize, DataTypes) => {
      * The `models/index` file will call this method automatically.
      */
     static associate(models) {
-      // define association here
+      Categories.hasMany(models.Services, {
+        foreignKey: 'categoryId'
+      })
     }
   }
   Categories.init({
