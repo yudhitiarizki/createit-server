@@ -4,13 +4,13 @@ const jwt = require("jsonwebtoken");
 
 const refreshToken = async (req, res) => {
     try {
-        const { userId, firstName, lastName, email, password } = data_user;
+        const { userId, firstName, lastName, email, password, phoneNumber, username, isAdmin } = data_user;
         
-        const accessToken = jwt.sign({ userId, firstName, lastName, email, password }, process.env.ACCESS_TOKEN_SECRET, {
+        const accessToken = jwt.sign({ userId, firstName, lastName, email, password, phoneNumber, username, isAdmin }, process.env.ACCESS_TOKEN_SECRET, {
             expiresIn: '7d'
         });
 
-        const refreshToken = jwt.sign({ userId, firstName, lastName, email, password }, process.env.REFRESH_TOKEN_SECRET, {
+        const refreshToken = jwt.sign({ userId, firstName, lastName, email, password, phoneNumber, username, isAdmin }, process.env.REFRESH_TOKEN_SECRET, {
             expiresIn: '1d'
         });
 

@@ -27,6 +27,7 @@ const AuthToken = (req, res, next) => {
                 userId: decoded.userId,
                 firstName: decoded.firstName,
                 lastName: decoded.lastName,
+                username: decoded.username,
                 email: decoded.email,
                 isAdmin: decoded.isAdmin,
                 phoneNumber: decoded.phoneNumber

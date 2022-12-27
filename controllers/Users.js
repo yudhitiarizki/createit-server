@@ -1,4 +1,4 @@
-const { Users } = require('../models');
+const { Users, Sellers } = require('../models');
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken"); 
 require('dotenv').config();
@@ -21,21 +21,22 @@ const Register = async (req, res) => {
         });
         res.json({message: "Register Successfully"});
     } catch (err) {
-        return res.status(400).send({
-            message: err
+        console.log(`${req.method} ${req.originalUrl} : ${error.message}`);
+        return res.status(400).json({
+          message: 'Failed to Register',
         });
     };
 };
 
 const Login = async (req, res) => {
     try {
-        const { userId, firstName, lastName, email, password, phoneNumber, username } = data_user;
+        const { userId, firstName, lastName, email, password, phoneNumber, username, isAdmin } = data_user;
         
-        const accessToken = jwt.sign({ userId, firstName, lastName, email, password, phoneNumber, username }, process.env.ACCESS_TOKEN_SECRET, {
+        const accessToken = jwt.sign({ userId, firstName, lastName, email, password, phoneNumber, username, isAdmin }, process.env.ACCESS_TOKEN_SECRET, {
             expiresIn: '7d'
         });
 
-        const refreshToken = jwt.sign({ userId, firstName, lastName, email, password, phoneNumber, username }, process.env.REFRESH_TOKEN_SECRET, {
+        const refreshToken = jwt.sign({ userId, firstName, lastName, email, password, phoneNumber, username, isAdmin }, process.env.REFRESH_TOKEN_SECRET, {
             expiresIn: '1d'
         });
 
@@ -47,13 +48,39 @@ const Login = async (req, res) => {
 
         res.json({ userId, firstName, lastName, email, phoneNumber, username, accessToken });
 
-    } catch (err) {
-        return res.status(400).send({
-            message: err
+    } catch (error) {
+        console.log(`${req.method} ${req.originalUrl} : ${error.message}`);
+        return res.status(400).json({
+          message: 'Failed to Login',
         });
     };
 };
 
+const RegSeller = async (req, res) => {
+    try {
+        const { userId } = data_user;
+        const { photoProfile, description, noRekening, bankName, cardHolder } = data_reg;
 
+        const seller = await Sellers.findOne({
+            where: {
+                userId: userId
+            }
+        })
+
+        if (seller) {
+            return res.status(400).json({
+                message: 'You have registered become Seller!'
+            })
+        }
+
+        await Sellers.create({
+            userId, photoProfile, description, noRekening, bankName, cardHolder
+        })
+
+    } catch (error) {
+        
+    }
+    
+}
 
 module.exports = { Register, Login };

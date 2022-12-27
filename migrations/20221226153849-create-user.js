@@ -21,10 +21,16 @@ module.exports = {
       password: {
         type: Sequelize.STRING
       },
+      username: {
+        type: Sequelize.STRING
+      },
       isAdmin: {
         type: Sequelize.INTEGER
       },
       phoneNumber: {
+        type: Sequelize.STRING
+      },
+      refreshToken: {
         type: Sequelize.STRING
       },
       createdAt: {

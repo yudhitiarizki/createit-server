@@ -1,4 +1,4 @@
-const { Users, Payments, Charities } = require('../models');
+const { Users } = require('../../models');
 const bcrypt = require("bcrypt");
 
 const re_name = /^[a-zA-Z0-9 ]+$/;
@@ -6,7 +6,6 @@ const re_username = /^[a-zA-Z0-9]+$/;
 const re_password = /^[a-zA-Z0-9]{2,30}$/;
 const RE_HTML_ERROR = /<[\s\S]*?>/; 
 const re_email= /^[a-zA-Z0-9@.]+$/;
-const re_number = /^[0-9]+$/;
 
 
 const AuthReg = async (req, res, next) => {
@@ -30,10 +29,16 @@ const AuthReg = async (req, res, next) => {
                 message: 'Username must be more than 4 character'
             });
         }
+
+        if ( username.search(re_username)  === -1 ) {
+            return res.status(400).send({
+                message: 'Username must be Character or Number!'
+            });
+        }
     }
 
     if ( phoneNumber ) {
-        if ( phoneNumber.search(re_number === -1) ) {
+        if ( isNaN(phoneNumber) ) {
             return res.status(400).send({
                 message: 'Phone Number must be number!'
             });
@@ -95,4 +100,39 @@ const AuthReg = async (req, res, next) => {
     next();
 };
 
-module.exports = AuthReg;
+const AuthLog = async (req, body, next) => {
+    const { username, password } = req.body;
+
+    const user = await Users.findOne({
+        where: {
+            username: username
+        }}
+    );
+
+    if (!user){
+        return res.status(412).send({
+            message: 'Username not Registered'
+        })
+    };
+
+    const match = await bcrypt.compare(password, user.password);
+    
+    if (!match){
+        return res.status(400).json({ message: "Wrong Password" });
+    }
+
+    data_user = {
+        userId: user.userId, 
+        firstName: user.firstName, 
+        lastName: user.lastName,        
+        email: user.email, 
+        password: user.password, 
+        phoneNumber: user.phoneNumber, 
+        username: user.username,
+        isAdmin: user.isAdmin
+    }
+
+    next()
+}
+
+module.exports = { AuthReg, AuthLog };
