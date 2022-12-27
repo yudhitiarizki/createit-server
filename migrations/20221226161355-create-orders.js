@@ -3,7 +3,7 @@
 module.exports = {
   async up(queryInterface, Sequelize) {
     await queryInterface.createTable('Orders', {
-      orderId: {
+      sellerId: {
         allowNull: false,
         autoIncrement: true,
         primaryKey: true,
@@ -13,24 +13,20 @@ module.exports = {
         type: Sequelize.INTEGER,
         allowNull: false
       },
-      photoProfile: {
+      packageId: {
+        type: Sequelize.INTEGER,
+        allowNull: false
+      },
+      paymentProof: {
         type: Sequelize.STRING,
         allowNull: false
       },
-      description: {
-        type: Sequelize.TEXT,
-        allowNull: false
-      },
-      noRekening: {
+      status: {
         type: Sequelize.STRING,
         allowNull: false
       },
-      bankName: {
-        type: Sequelize.STRING,
-        allowNull: false
-      }, 
-      cardHolder: {
-        type: Sequelize.STRING,
+      revisionLeft: {
+        type: Sequelize.INTEGER,
         allowNull: false
       },
       createdAt: {
@@ -47,3 +43,4 @@ module.exports = {
     await queryInterface.dropTable('Orders');
   }
 };
+

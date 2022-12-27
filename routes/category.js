@@ -5,13 +5,15 @@ const router = express.Router();
 const AuthToken = require('../middlewares/AuthToken');
 
 //function Routes
-
+const { test } = require('../controllers/category')
 
 
 //router
-router.get('/tes', async (req, res) => {
+router.get('/test', async (req, res) => {
     return res.json('ok');
 })
+
+router.get('/category', AuthToken, test)
 
 
 module.exports = router;

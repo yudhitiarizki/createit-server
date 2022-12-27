@@ -24,7 +24,7 @@ module.exports = {
       username: {
         type: Sequelize.STRING
       },
-      isAdmin: {
+      roles: {
         type: Sequelize.INTEGER
       },
       phoneNumber: {

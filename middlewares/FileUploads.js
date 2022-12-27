@@ -14,30 +14,33 @@ function decodeBase64Image(dataString) {
     return response;
   }
 
-function processRequest(req, res, next, fieldName='image', dir='files') {
+function processRequest(req, res, next, fieldName='files', dir='files') {
+    
+    if(req.body.image){
+        if(!req.body[fieldName]) { next() }
+        // Ambil data "image" dari file JSON
+        const imageData = req.body[fieldName];
 
-    if(!req.body[fieldName]) { next() }
-    // Ambil data "image" dari file JSON
-    const imageData = req.body[fieldName];
+        // Panggil fungsi decodeBase64Image untuk mendecode data "image"
+        const image = decodeBase64Image(imageData);
 
-    // Panggil fungsi decodeBase64Image untuk mendecode data "image"
-    const image = decodeBase64Image(imageData);
+        // Tentukan nama file dan tipe file
+        const fileName = 'files-' + Date.now() + '.' + image.type.split('/')[1];
+        const filePath = 'public/uploads/' + dir +'/' + fileName;
 
-    // Tentukan nama file dan tipe file
-    const fileName = 'files-' + Date.now() + '.' + image.type.split('/')[1];
-    const filePath = 'public/uploads/' + dir +'/' + fileName;
+        // Tulis file ke dalam folder "public/uploads"
+        fs.writeFile(filePath, image.data, (error) => {
+            if (error) {
+                return next(error);
+            }
+        });
 
-    // Tulis file ke dalam folder "public/uploads"
-    fs.writeFile(filePath, image.data, (error) => {
-        if (error) {
-            return next(error);
-        }
-    });
+        req.body.fileName = req.protocol + '://' + req.get('host') + '/' + filePath
 
-    req.body.fileName = req.protocol + '://' + req.get('host') + '/' + filePath
-
-    // Lanjutkan ke middleware berikutnya
-    next();
+        // Lanjutkan ke middleware berikutnya
+        next();
+    }
+    
 };
 
 

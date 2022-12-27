@@ -20,7 +20,6 @@ const AuthToken = (req, res, next) => {
             })
         };
 
-
         jwt.verify(tokenValue, process.env.ACCESS_TOKEN_SECRET, (err, decoded) => {
             if (err) return res.sendStatus(403);
             data_user = {
@@ -29,7 +28,7 @@ const AuthToken = (req, res, next) => {
                 lastName: decoded.lastName,
                 username: decoded.username,
                 email: decoded.email,
-                isAdmin: decoded.isAdmin,
+                roles: decoded.roles,
                 phoneNumber: decoded.phoneNumber
             }
             next();

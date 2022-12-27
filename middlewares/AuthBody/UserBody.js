@@ -38,7 +38,7 @@ const AuthReg = async (req, res, next) => {
     }
 
     if ( phoneNumber ) {
-        if ( isNaN(phoneNumber) ) {
+        if ( !isNaN(phoneNumber) ) {
             return res.status(400).send({
                 message: 'Phone Number must be number!'
             });
@@ -135,4 +135,32 @@ const AuthLog = async (req, body, next) => {
     next()
 }
 
-module.exports = { AuthReg, AuthLog };
+const AuthRegSel = async (req, res, next) => {
+    const { photoProfile, description, noRekening, bankName, cardHolder } = req.body;
+
+    if (cardHolder.search(re_name) === -1){
+        return res.status(412).send({
+            message: 'Card Holder doesnt match with Format'
+        })
+    };
+
+    if (isNaN(noRekening)){
+        return res.status(400).send({
+            message: 'Rekening Number must be number!'
+        });
+    }
+
+    if( photoProfile.match(RE_HTML_ERROR) || cardHolder.match(RE_HTML_ERROR) || noRekening.match(RE_HTML_ERROR) || bankName.match(RE_HTML_ERROR)){
+        return res.status(400).send({
+            message: 'Dont write HTML Tag on Field'
+        });
+    };
+
+    data_reg = {
+        photoProfile, description, noRekening, bankName, cardHolder
+    }
+
+    next();
+}
+
+module.exports = { AuthReg, AuthLog, AuthRegSel };

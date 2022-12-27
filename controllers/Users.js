@@ -17,7 +17,7 @@ const Register = async (req, res) => {
             phoneNumber: user.phoneNumber, 
             username: user.username,
             password: hashPassword,
-            isAdmin: 0
+            roles: 0
         });
         res.json({message: "Register Successfully"});
     } catch (err) {
@@ -30,13 +30,13 @@ const Register = async (req, res) => {
 
 const Login = async (req, res) => {
     try {
-        const { userId, firstName, lastName, email, password, phoneNumber, username, isAdmin } = data_user;
+        const { userId, firstName, lastName, email, password, phoneNumber, username, roles } = data_user;
         
-        const accessToken = jwt.sign({ userId, firstName, lastName, email, password, phoneNumber, username, isAdmin }, process.env.ACCESS_TOKEN_SECRET, {
+        const accessToken = jwt.sign({ userId, firstName, lastName, email, password, phoneNumber, username, roles }, process.env.ACCESS_TOKEN_SECRET, {
             expiresIn: '7d'
         });
 
-        const refreshToken = jwt.sign({ userId, firstName, lastName, email, password, phoneNumber, username, isAdmin }, process.env.REFRESH_TOKEN_SECRET, {
+        const refreshToken = jwt.sign({ userId, firstName, lastName, email, password, phoneNumber, username, roles }, process.env.REFRESH_TOKEN_SECRET, {
             expiresIn: '1d'
         });
 
@@ -73,14 +73,27 @@ const RegSeller = async (req, res) => {
             })
         }
 
+        await Users.update({roles: 1}, {
+            where: {
+                userId: userId
+            }
+        })
+
         await Sellers.create({
             userId, photoProfile, description, noRekening, bankName, cardHolder
         })
 
+        return res.status(200).json({
+            message: 'Seller Registered!'
+        })
+
     } catch (error) {
-        
+        console.log(`${req.method} ${req.originalUrl} : ${error.message}`);
+        return res.status(400).json({
+          message: 'Failed to Register Seller',
+        });
     }
     
 }
 
-module.exports = { Register, Login };
+module.exports = { Register, Login, RegSeller };

@@ -1,7 +1,7 @@
 const express = require("express");
 
 // Middleware
-const AuthToken = require('../middlewares/authToken');
+const AuthToken = require('../middlewares/AuthToken');
 const { AuthReg, AuthLog } = require('../middlewares/AuthBody/UserBody');
 
 //function Routes

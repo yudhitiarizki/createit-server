@@ -51,6 +51,10 @@ module.exports = (sequelize, DataTypes) => {
     cardHolder: {
       type: DataTypes.STRING,
       allowNull: false
+    },
+    isVerified: {
+      type: DataTypes.INTEGER,
+      allowNull: false
     }
   }, {
     sequelize,
