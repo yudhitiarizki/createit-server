@@ -17,6 +17,8 @@ app.use(express.json());
 app.use(cors());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use('/public/uploads', express.static(path.join(public, "uploads")));
+
+
 app.use((req, res, next) => {
     const origin = req.get('referer');
     const isWhitelisted = whitelist.find((w) => origin && origin.includes(w));
@@ -36,7 +38,8 @@ const setContext = (req, res, next) => {
     next();
 };
 app.use(setContext);
-app.use(router);
+
+app.use('/', router);
 
 app.get('/', function(req, res) {
     res.sendFile(path.join(public + "index.html"));
