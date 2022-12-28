@@ -1,17 +1,15 @@
 const express = require("express");
-const router = express.Router();
+
+//function Routes
+const { approveSeller } = require('../controllers/admin')
+
 
 // Middleware
 const AuthToken = require('../middlewares/AuthToken');
 
-//function Routes
-
-
-
+const router = express.Router();
 //router
-router.patch('/regseller/approve', async (req, res) => {
-    return res.json('ok');
-})
+router.patch('/regseller/approve', approveSeller);
 
 
 module.exports = router;

@@ -3,7 +3,7 @@
 module.exports = {
   async up(queryInterface, Sequelize) {
     await queryInterface.createTable('Sellers', {
-      orderId: {
+      sellerId: {
         allowNull: false,
         autoIncrement: true,
         primaryKey: true,
@@ -28,7 +28,7 @@ module.exports = {
       bankName: {
         type: Sequelize.STRING,
         allowNull: false
-      }, 
+      },
       cardHolder: {
         type: Sequelize.STRING,
         allowNull: false
