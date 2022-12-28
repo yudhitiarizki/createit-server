@@ -40,18 +40,6 @@ const AuthReg = async (req, res, next) => {
         }
     }
 
-<<<<<<< HEAD
-    if ( phoneNumber ) {
-        if ( isNaN(phoneNumber) ) {
-=======
-    if (phoneNumber) {
-        if (isNaN(phoneNumber)) {
->>>>>>> 0c99de1e8496e57e049b92e17af6a0c7839b7ab4
-            return res.status(400).send({
-                message: 'Phone Number must be number!'
-            });
-        }
-    }
 
     if (firstName.match(RE_HTML_ERROR) || lastName.match(RE_HTML_ERROR) || email.match(RE_HTML_ERROR) || password.match(RE_HTML_ERROR)) {
         return res.status(400).send({
@@ -101,11 +89,6 @@ const AuthReg = async (req, res, next) => {
         });
     };
 
-<<<<<<< HEAD
-    
-    
-=======
->>>>>>> 0c99de1e8496e57e049b92e17af6a0c7839b7ab4
     data_user = {
         firstName: firstName, lastName: lastName, email: email, password: password, phoneNumber: phoneNumber, username: username
     };
