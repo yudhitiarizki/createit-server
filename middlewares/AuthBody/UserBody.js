@@ -1,5 +1,6 @@
 const { Users } = require('../../models');
 const bcrypt = require("bcrypt");
+const { Uploads } = require('../FileUploads')
 
 const re_name = /^[a-zA-Z0-9 ]+$/;
 const re_username = /^[a-zA-Z0-9]+$/;
@@ -92,6 +93,8 @@ const AuthReg = async (req, res, next) => {
         message: 'The passwords do not match.',
         });
     };
+
+    
     
     data_user = {
         firstName: firstName, lastName:lastName, email:email, password:password, phoneNumber: phoneNumber, username: username
@@ -129,14 +132,15 @@ const AuthLog = async (req, res, next) => {
         password: user.password, 
         phoneNumber: user.phoneNumber, 
         username: user.username,
-        isAdmin: user.isAdmin
+        isAdmin: user.isAdmin,
+        role: user.role
     }
 
     next()
 }
 
 const AuthRegSel = async (req, res, next) => {
-    const { photoProfile, description, noRekening, bankName, cardHolder } = req.body;
+    var { photoProfile, description, noRekening, bankName, cardHolder } = req.body;
 
     if (cardHolder.search(re_name) === -1){
         return res.status(412).send({
@@ -155,6 +159,11 @@ const AuthRegSel = async (req, res, next) => {
             message: 'Dont write HTML Tag on Field'
         });
     };
+
+
+    photoProfile = req.protocol + '://' + req.get('host') + '/' + Uploads(photoProfile, 'images');
+    
+    console.log(photoProfile);
 
     data_reg = {
         photoProfile, description, noRekening, bankName, cardHolder

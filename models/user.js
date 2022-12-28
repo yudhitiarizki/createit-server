@@ -49,7 +49,7 @@ module.exports = (sequelize, DataTypes) => {
     password: {
       type: DataTypes.STRING
     },
-    roles: {
+    role: {
       type: DataTypes.INTEGER
     },
     phoneNumber: {
