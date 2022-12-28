@@ -12,12 +12,19 @@ module.exports = {
       userId: {
         type: Sequelize.INTEGER
       },
+      type: {
+        type: Sequelize.STRING
+      },
       isRead: {
         type: Sequelize.INTEGER
       },
       message: {
         allowNull: false,
         type: Sequelize.STRING
+      },
+      createdAt: {
+        allowNull: false,
+        type: Sequelize.DATE
       },
       updatedAt: {
         allowNull: false,

@@ -2,7 +2,7 @@ const jwt = require("jsonwebtoken");
 const { Sellers } = require('../models')
 require('dotenv').config();
 
-const AuthAdmin = (req, res, next) => {
+const AuthSeller = (req, res, next) => {
     try {
         const authHeader = req.headers['authorization'];
     
@@ -23,7 +23,7 @@ const AuthAdmin = (req, res, next) => {
         jwt.verify(tokenValue, process.env.ACCESS_TOKEN_SECRET, (err, decoded) => {
             if (err) return res.sendStatus(403);
 
-            if(decoded.roles === 0) {
+            if(decoded.role !== 1) {
                 return res.status(400).json({
                     message: 'You must be seller!'
                 })
@@ -41,7 +41,7 @@ const AuthAdmin = (req, res, next) => {
                 lastName: decoded.lastName,
                 username: decoded.username,
                 email: decoded.email,
-                roles: decoded.roles,
+                role: decoded.role,
                 phoneNumber: decoded.phoneNumber,
                 seller: seller
             }
@@ -56,4 +56,4 @@ const AuthAdmin = (req, res, next) => {
     
 }
 
-module.exports = AuthAdmin;
+module.exports = AuthSeller;

@@ -7,7 +7,6 @@ const AuthToken = require('../middlewares/AuthToken');
 //function Routes
 
 
-
 //router
 router.get('/test', async (req, res) => {
     return res.json('ok');
