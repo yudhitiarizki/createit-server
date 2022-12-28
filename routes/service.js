@@ -2,16 +2,17 @@ const express = require("express");
 const router = express.Router();
 
 // Middleware
-const AuthToken = require('../middlewares/AuthToken');
+const { AuthSeller } = require('../middlewares/AuthLogin')
+const { AuthService } = require('../middlewares/AuthBody/ServiceBody')
 
 //function Routes
-
+const { getService, createService } = require('../controllers/service')
 
 
 //router
-router.get('/tes', async (req, res) => {
-    return res.json('ok');
-})
+router.get('/service', getService);
+router.post('/service', AuthSeller, AuthService, createService);
+
 
 
 module.exports = router;

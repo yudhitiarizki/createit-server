@@ -162,8 +162,6 @@ const AuthRegSel = async (req, res, next) => {
 
 
     photoProfile = req.protocol + '://' + req.get('host') + '/' + Uploads(photoProfile, 'images');
-    
-    console.log(photoProfile);
 
     data_reg = {
         photoProfile, description, noRekening, bankName, cardHolder
