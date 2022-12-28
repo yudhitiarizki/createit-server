@@ -38,7 +38,7 @@ const AuthReg = async (req, res, next) => {
     }
 
     if ( phoneNumber ) {
-        if ( !isNaN(phoneNumber) ) {
+        if ( isNaN(phoneNumber) ) {
             return res.status(400).send({
                 message: 'Phone Number must be number!'
             });
@@ -100,7 +100,7 @@ const AuthReg = async (req, res, next) => {
     next();
 };
 
-const AuthLog = async (req, body, next) => {
+const AuthLog = async (req, res, next) => {
     const { username, password } = req.body;
 
     const user = await Users.findOne({
