@@ -9,17 +9,13 @@ require('dotenv').config();
 const app = express();
 const public = __dirname + "/public/";
 const PORT = process.env.PORT_SERVER || 3002;
-const whitelist = [
-    '*'
-  ];
 
 app.use(express.json());
 app.use(cors());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use('/public/uploads', express.static(path.join(public, "uploads")));
 
-
-app.use('/', router);
+app.use(router);
 
 app.get('/', function(req, res) {
     res.sendFile(path.join(public + "index.html"));
