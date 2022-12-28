@@ -28,7 +28,7 @@ module.exports = {
       bankName: {
         type: Sequelize.STRING,
         allowNull: false
-      }, 
+      },
       cardHolder: {
         type: Sequelize.STRING,
         allowNull: false
