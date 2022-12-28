@@ -91,10 +91,9 @@ const RegSeller = async (req, res) => {
             }
         })
 
-
         await Sellers.create({
             userId, photoProfile, description, noRekening, bankName, cardHolder, isVerified: 0
-        })
+        });
 
         return res.status(200).json({
             message: 'Sucesss! Seller Registered'
@@ -111,26 +110,15 @@ const RegSeller = async (req, res) => {
 
 const getUsers = async (req, res) => {
     try {
-        var user = await Users.findAll();
-
-        const seller = await Sellers.findAll();
-
-        user = user.map((usr) => {
-            var selle = ''
-            usr = usr.dataValues;
-            seller.forEach(sell => {
-                if(sell.userId === usr.userId){
-                    selle = sell
-                }
-            });
-            return {
-                ...usr,
-                seller: selle 
+        var user = await Users.findAll({
+            include: {
+                model: Sellers
             }
-        })
+        });
+
 
         return res.json({
-            user: user
+            data: user
         })
     } catch (error) {
         console.log(`${req.method} ${req.originalUrl} : ${error.message}`);
@@ -142,28 +130,14 @@ const getUsers = async (req, res) => {
 
 const getSeller = async (req, res) => {
     try {
-        var seller = await Sellers.findAll();
-
-        const user = await Users.findAll();
-
-        seller = seller.map((sel) => {
-            sel = sel.dataValues;
-            var use = '';
-
-            user.forEach(usr => {
-                if(sel.userId === usr.userId){
-                    use = usr
-                }
-            })
-
-            return {
-                ...sel,
-                user:use
+        var seller = await Sellers.findAll({
+            include: {
+                model: Users
             }
-        })
+        });
 
         return res.status(200).json({
-            sellers: seller
+            data: seller
         })
     } catch (error) {
         console.log(`${req.method} ${req.originalUrl} : ${error.message}`);

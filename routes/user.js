@@ -1,7 +1,7 @@
 const express = require("express");
 
 // Middleware
-const AuthToken = require('../middlewares/AuthToken');
+const { AuthAdmin, AuthToken } = require('../middlewares/AuthLogin')
 const { AuthReg, AuthLog, AuthRegSel } = require('../middlewares/AuthBody/UserBody');
 
 //function Routes
@@ -16,8 +16,8 @@ router.post('/register', AuthReg, Register);
 router.post('/login', AuthLog, Login);
 router.get('/refreshtoken', AuthToken, RefreshToken);
 router.post('/regseller', AuthToken, AuthRegSel, RegSeller);
-router.get('/users', getUsers);
-router.get('/regseller', getSeller);
+router.get('/users', AuthAdmin, getUsers);
+router.get('/regseller', AuthAdmin, getSeller);
 
 
 module.exports = router;

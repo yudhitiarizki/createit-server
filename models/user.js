@@ -12,16 +12,10 @@ module.exports = (sequelize, DataTypes) => {
     static associate(models) {
       Users.hasOne(models.Sellers, {
         foreignKey: 'userId'
-      })
-    }
-
-    static associate(models) {
+      }),
       Users.hasMany(models.Notifications, {
         foreignKey: 'userId'
-      })
-    }
-
-    static associate(models) {
+      }),
       Users.hasMany(models.Orders, {
         foreignKey: 'userId'
       })
