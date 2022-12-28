@@ -102,7 +102,7 @@ const AuthReg = async (req, res, next) => {
     next();
 };
 
-const AuthLog = async (req, body, next) => {
+const AuthLog = async (req, res, next) => {
     const { username, password } = req.body;
 
     const user = await Users.findOne({
