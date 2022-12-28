@@ -96,4 +96,15 @@ const RegSeller = async (req, res) => {
     
 }
 
-module.exports = { Register, Login, RegSeller };
+const getUsers = async (req, res) => {
+    try {
+        const user = await Users.findAll();
+        return res.json({
+            user: user
+        })
+    } catch (error) {
+        
+    }
+}
+
+module.exports = { Register, Login, RegSeller, getUsers };
