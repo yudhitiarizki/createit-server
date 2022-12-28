@@ -21,7 +21,7 @@ const AuthAdmin = (req, res, next) => {
         
         jwt.verify(tokenValue, process.env.ACCESS_TOKEN_SECRET, (err, decoded) => {
             if (err) return res.sendStatus(403);
-            if (decoded.roles === 2){
+            if (decoded.roles !== 3){
                 return res.status(400).json({
                     message: 'You cant access this feature'
                 })
