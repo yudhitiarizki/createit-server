@@ -1,4 +1,4 @@
-const { Service } = require('../../models')
+const { Services } = require('../../models')
 
 const RE_HTML_ERROR = /<[\s\S]*?>/; 
 
@@ -10,7 +10,27 @@ const CreateSlug = (input) => {
 }
 
 const AuthService = async (req, res, next) => {
-    const { title, description, categoryId } = req.body;
+    var { title, description, categoryId } = req.body;
+
+    if (req.params.serviceId){
+        const serv = await Services.findOne({
+            where: {
+                serviceId: req.params.serviceId
+            }
+        })
+
+        if(title.length < 1){
+            title = serv.title
+        } 
+
+        if(description.length < 1){
+            description = serv.description
+        }
+
+        if(categoryId.length < 1){
+            categoryId = serv.categoryId
+        }
+    }
 
     if( title.match(RE_HTML_ERROR) ){
         return res.status(400).send({

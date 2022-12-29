@@ -21,7 +21,7 @@ module.exports = {
         allowNull: false
       },
       delivery: {
-        type: Sequelize.STRING,
+        type: Sequelize.INTEGER,
         allowNull: false
       },
       revision: {
@@ -37,7 +37,7 @@ module.exports = {
         allowNull: true
       },
       maxDuration: {
-        type: Sequelize.STRING,
+        type: Sequelize.INTEGER,
         allowNull: true
       },
       price: {

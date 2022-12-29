@@ -147,4 +147,28 @@ const getSeller = async (req, res) => {
     }
 }
 
-module.exports = { Register, Login, RegSeller, getUsers, getSeller };
+const detailSeller = async (req, res) => {
+    try {
+        const { sellerId } = req.params;
+
+        const seller = await Sellers.findOne({ 
+            where : { sellerId: sellerId },
+            include: { 
+                model: Users,
+                attributes: ['firstName', 'lastName']  },
+            attributes: ['photoProfile', 'description']
+        })
+
+        return res.status(200).json({
+            data: seller
+        })
+
+    } catch (error) {
+        console.log(`${req.method} ${req.originalUrl} : ${error.message}`);
+        return res.status(400).json({
+          message: 'Failed to Fetch Seller',
+        });
+    }
+}
+
+module.exports = { Register, Login, RegSeller, getUsers, getSeller, detailSeller };

@@ -5,7 +5,7 @@ const { AuthAdmin, AuthToken } = require('../middlewares/AuthLogin')
 const { AuthReg, AuthLog, AuthRegSel } = require('../middlewares/AuthBody/UserBody');
 
 //function Routes
-const { Register, Login, RegSeller, getUsers, getSeller  } = require('../controllers/Users');
+const { Register, Login, RegSeller, getUsers, getSeller, detailSeller } = require('../controllers/Users');
 const RefreshToken = require('../controllers/refreshToken');
 
 const router = express.Router();
@@ -18,6 +18,7 @@ router.get('/refreshtoken', AuthToken, RefreshToken);
 router.post('/regseller', AuthToken, AuthRegSel, RegSeller);
 router.get('/users', AuthAdmin, getUsers);
 router.get('/regseller', AuthAdmin, getSeller);
+router.get('/seller/:sellerId', detailSeller);
 
 
 module.exports = router;

@@ -29,12 +29,19 @@ const AuthSeller = async (req, res, next) => {
                     message: 'You must be seller!'
                 })
             }
+
             
             const seller = await Sellers.findOne({
                 where: {
                     userId: decoded.userId
                 }
             })
+
+            // if (seller.isVerified === 0){
+            //     return res.status(400).json({
+            //         message: 'Waiting for acc Admin'
+            //     })
+            // }
             
             data_user = {
                 userId: decoded.userId,

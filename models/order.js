@@ -13,8 +13,8 @@ module.exports = (sequelize, DataTypes) => {
       Orders.belongsTo(models.Users, {
         foreignKey: 'userId'
       }),
-      Orders.hasMany(models.Packages, {
-        foreignKey: 'orderId'
+      Orders.belongsTo(models.Packages, {
+        foreignKey: 'packageId'
       }),
       Orders.hasOne(models.Reviews, {
         foreignKey: 'orderId'
