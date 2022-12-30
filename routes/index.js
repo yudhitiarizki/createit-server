@@ -6,11 +6,11 @@ const user = require('./user');
 const order = require('./order');
 const service = require('./service');
 const category = require('./category');
-const admin = require('./admin');
 const package = require('./package');
 const review = require('./review');
+const notification = require('./notification')
 
 //Routes
-router.use(user, order, service, category, admin, package, review);
+router.use(user, order, service, category, package, review, notification);
 
 module.exports = router;

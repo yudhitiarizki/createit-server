@@ -1,8 +1,40 @@
 const { Users, Sellers, Notifications } = require('../models');
 const bcrypt = require("bcrypt");
-const jwt = require("jsonwebtoken"); 
-const notifications = require('../models/notifications');
+const jwt = require("jsonwebtoken");
+const { SendNotification } = require('./notification');
 require('dotenv').config();
+
+const approveSeller = async (req, res) => {
+    try {
+        const userId = req.body.userId
+
+        const updateCount = await Sellers.update(
+            { isVerified: 1 },
+            { where: { 
+                userId: userId 
+            }}
+        );
+
+        if (updateCount < 1){
+            return res.status(400).json({
+                message: 'Users not yet verify! please try again later'
+            })
+        }
+
+        SendNotification(userId, 1, "Your seller account is verified.");
+
+        return res.status(200).json({ 
+            message: 'uhuy'
+        });
+
+    } catch (error) {
+        console.log(`${req.method} ${req.originalUrl} : ${error.message}`);
+        return res.status(400).json({
+            message: 'Failed to verify Seller',
+        });
+    }
+
+}
 
 const Register = async (req, res) => {
     const user = data_user;
@@ -73,13 +105,13 @@ const RegSeller = async (req, res) => {
         const { userId } = data_user;
         const { photoProfile, description, noRekening, bankName, cardHolder } = data_reg;
 
-        const seller = await Sellers.findOne({
+        const exist = await Sellers.findOne({
             where: {
                 userId: userId
             }
         })
 
-        if (seller) {
+        if (exist) {
             return res.status(400).json({
                 message: 'You have registered become Seller!'
             })
@@ -91,12 +123,25 @@ const RegSeller = async (req, res) => {
             }
         })
 
-        await Sellers.create({
+        const seller = await Sellers.create({
             userId, photoProfile, description, noRekening, bankName, cardHolder, isVerified: 0
         });
 
+        const user = await Users.findOne({
+            where: userId
+        });
+
+        const { firstName, lastName, email, password, phoneNumber, username, role } = user;
+
+        const accessToken = jwt.sign({ userId, firstName, lastName, email, password, phoneNumber, username, role }, process.env.ACCESS_TOKEN_SECRET, {
+            expiresIn: '7d'
+        });
+
         return res.status(200).json({
-            message: 'Sucesss! Seller Registered'
+            message: 'Sucesss! Seller Registered',
+            data: {
+                firstName, lastName, email, phoneNumber, username, role, seller, accessToken
+            }
         })
 
     } catch (error) {
@@ -189,4 +234,4 @@ const detailMySeller = async (req, res) => {
     }
 }
 
-module.exports = { Register, Login, RegSeller, getUsers, getSeller, detailSeller, detailMySeller };
+module.exports = { Register, Login, RegSeller, getUsers, getSeller, detailSeller, detailMySeller, approveSeller };

@@ -58,7 +58,7 @@ const createService = async (req, res) => {
 
 const getTopService = async (req, res) => {
     try {
-        const services = await Services.findAll({
+        var services = await Services.findAll({
             include: [{
                 model: Reviews,
                 attributes: []
@@ -73,8 +73,17 @@ const getTopService = async (req, res) => {
             order: [['Rating', 'DESC']]
         })
 
+        for (let index = 0; index < services.length; index++) {
+            if(services[index].dataValues.noOfBuyer){
+                var element = services[index].dataValues.noOfBuyer / 2;
+                services[index].dataValues.noOfBuyer = element
+            }
+        }
+
+        let topServ = services.slice(0, 6);
+
         return res.status(200).json({
-            data: services
+            data: topServ
         })
     } catch (error) {
         console.log(`${req.method} ${req.originalUrl} : ${error.message}`);
@@ -108,6 +117,12 @@ const getDetailService = async (req, res) => {
                 serviceId: serviceId
             }
         })
+
+        
+
+        if (service.noOfBuyer){
+            service.noOfBuyer = service.noOfBuyer / 2
+        }
 
         service.dataValues.image = image;
         

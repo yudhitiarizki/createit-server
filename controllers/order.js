@@ -1,5 +1,7 @@
 const { Orders, Packages, Services, Sellers, Users, OrderFiles, OrderNotes } = require('../models');
+const { Op } = require('sequelize');
 const { SendNotification } = require('./notification');
+const { Uploads } = require('../middlewares/FileUploads')
 
 
 const createOrder = async (req, res) => {
@@ -210,6 +212,288 @@ const revision = async (req, res) => {
             message: 'Failed to approve orders',
         });
     }
+};
+
+const getOrderPayment = async (req, res) => {
+    try {
+        const order = await Orders.findAll({
+            where: {
+                status: "Checking payment"
+            }
+        });
+
+        return res.status(200).json({
+            data: order
+        });
+    } catch (error) {
+        console.log(`${req.method} ${req.originalUrl} : ${error.message}`);
+        return res.status(400).json({
+            message: 'Failed to retrive orders',
+        });
+    }
+};
+
+const orderVerif = async (req, res) => {
+    try {
+        const { orderId } = req.body;
+
+        const order = await Orders.findOne({
+            where: { orderId: orderId },
+            include: {
+                model: Packages,
+                include: {
+                    model: Services,
+                    include: {
+                        model: Sellers
+                    }
+                }
+                
+            } 
+        });
+
+        const updateCount = await Orders.update({status: "Pending"},{
+            where:{ orderId: orderId }
+        });
+
+        if (updateCount < 1){
+            return res.status(401).json({
+                message: 'Failed to Approve'
+            });
+        };
+
+        const { userId } = order.Package.Service.Seller;
+        
+        SendNotification(userId, 2, "New Order");
+
+        return res.status(200).json({
+            message: "Orders has been approved!"
+        })
+        
+    } catch (error) {
+        console.log(`${req.method} ${req.originalUrl} : ${error.message}`);
+        return res.status(400).json({
+            message: 'Failed to approve orders',
+        });
+    }
+};
+
+const getOrderApprove = async (req, res) => {
+    try {
+        const orders = await Orders.findAll({
+            where: {
+                status: "Approved"
+            },
+            include: {
+                model: Packages,
+                include: {
+                    model: Services,
+                    include: {
+                        model: Sellers,
+                        include: {
+                            model: Users
+                        }
+                    }
+                } 
+            } 
+        });
+
+        const order = orders.map((order) => {
+            const { firstName, lastName, username } = order.Package.Service.Seller.User;
+            const { noRekening, bankName, cardHolder } = order.Package.Service.Seller
+            const { title } = order.Package.Service;
+            const { type, price } = order.Package;
+            const { orderId } = order; 
+
+            return { orderId, username, firstName, lastName, title, type, price, noRekening, bankName, cardHolder }
+        });
+
+        return res.status(200).json({
+            data: order
+        })
+
+    } catch (error) {
+        console.log(`${req.method} ${req.originalUrl} : ${error.message}`);
+        return res.status(400).json({
+            message: 'Failed to retrive orders',
+        });
+    }
+};
+
+const orderDone = async (req, res) => {
+    try {
+        const { orderId } = req.body;
+
+        const order = await Orders.findOne({
+            where: { orderId: orderId },
+            include: {
+                model: Packages,
+                include: {
+                    model: Services,
+                    include: {
+                        model: Sellers
+                    }
+                }
+                
+            } 
+        });
+
+        const updateCount = await Orders.update({status: "Done"},{
+            where:{ orderId: orderId }
+        });
+
+        if (updateCount < 1){
+            return res.status(401).json({
+                message: 'Failed to done'
+            });
+        };
+
+        const { userId } = order.Package.Service.Seller;
+
+        SendNotification(userId, 2, `Order #${orderId} has done!`);
+
+        return res.status(200).json({
+            message: "Order has done!"
+        })
+
+    } catch (error) {
+        console.log(`${req.method} ${req.originalUrl} : ${error.message}`);
+        return res.status(400).json({
+            message: 'Failed to done orders',
+        });
+    }
+};
+
+const getOrderPending = async (req, res) => {
+    try {
+        const orders = await Orders.findAll({
+            where: {
+                status: "Pending"
+            },
+            include: [{
+                model: Packages,
+                include: {
+                    model: Services,
+                } 
+            }, {
+                model: Users
+            }]
+        });
+
+        const order = orders.map((order) => {
+            const { title } = order.Package.Service;
+            const { type, delivery, revision, noOfConcept, noOfPages, maxDuration, price } = order.Package;
+            const { username, firstName, lastName } = order.User
+            const { orderId, userId, note } = order; 
+
+            return { orderId, userId, username, firstName, lastName, title, type, delivery, revision, noOfConcept, noOfPages, maxDuration, price, note }
+        });
+
+        return res.status(200).json({
+            data: order
+        })
+
+    } catch (error) {
+        console.log(`${req.method} ${req.originalUrl} : ${error.message}`);
+        return res.status(400).json({
+            message: 'Failed to retrive orders',
+        });
+    }
+};
+
+const orderWorking = async (req, res) => {
+    try {
+        const { orderId } = req.body;
+
+        const order = await Orders.findOne({
+            where: { orderId: orderId } 
+        });
+
+        const updateCount = await Orders.update({status: "Working"},{
+            where:{ orderId: orderId }
+        });
+
+        if (updateCount < 1){
+            return res.status(401).json({
+                message: 'Failed to working'
+            });
+        };
+
+        const { userId } = order;
+
+        SendNotification(userId, 1, `Order #${orderId} has Working!`);
+
+        return res.status(200).json({
+            message: "Order has Working!"
+        })
+
+    } catch (error) {
+        console.log(`${req.method} ${req.originalUrl} : ${error.message}`);
+        return res.status(400).json({
+            message: 'Failed to Working orders',
+        });
+    }
+};
+
+const progressOrder = async (req, res) => {
+    try {
+        const orders = await Orders.findAll({
+            where: {
+                status: {
+                    [Op.or]: ["Revising", "Working"]
+                }
+            },
+            include: [{
+                model: Users
+            },{
+                model: Packages,
+                include: {
+                    model: Services
+                }
+            }, {
+                model: OrderNotes
+            }]
+        });
+
+        const order = orders.map((order) => {
+            const { title } = order.Package.Service;
+            const { type, delivery, revision, noOfConcept, noOfPages, maxDuration } = order.Package;
+            const { username, firstName, lastName } = order.User
+            const { orderId, userId, note } = order; 
+            const orderNotes = order.OrderNotes;
+
+            return { orderId, userId, username, firstName, lastName, title, type, delivery, revision, noOfConcept, noOfPages, maxDuration, note, orderNotes }
+        })
+
+        return res.status(200).json({
+            data: order
+        })
+        
+    } catch (error) {
+        console.log(`${req.method} ${req.originalUrl} : ${error.message}`);
+        return res.status(400).json({
+            message: 'Failed to retrive orders',
+        });
+    }
 }
 
-module.exports = { createOrder, getOrderUser, getDetailOrder, approveOrder, revision};
+const uploadFile = async (req, res) => {
+    try {
+        var { orderId, file } = req.body;
+
+        file = req.protocol + '://' + req.get('host') + '/' + Uploads(file, 'files');
+
+        await OrderFiles.create({ orderId, file });
+
+        return res.status(200).json({
+            message: "Success to upload file"
+        })
+        
+    } catch (error) {
+        console.log(`${req.method} ${req.originalUrl} : ${error.message}`);
+        return res.status(400).json({
+            message: 'Failed to uploads',
+        });
+    }
+}
+
+module.exports = { createOrder, getOrderUser, getDetailOrder, approveOrder, revision, getOrderPayment, orderVerif, getOrderApprove, orderDone, getOrderPending, orderWorking, progressOrder, uploadFile };

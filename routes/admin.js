@@ -8,8 +8,8 @@ const { approveSeller } = require('../controllers/admin')
 const { AuthToken } = require('../middlewares/AuthLogin');
 
 const router = express.Router();
+
 //router
-router.patch('/regseller/approve', approveSeller);
 
 
 module.exports = router;
