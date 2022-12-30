@@ -18,6 +18,12 @@ module.exports = (sequelize, DataTypes) => {
       }),
       Orders.hasOne(models.Reviews, {
         foreignKey: 'orderId'
+      }),
+      Orders.hasMany(models.OrderNotes, {
+        foreignKey: 'orderId'
+      })
+      Orders.hasMany(models.OrderFiles, {
+        foreignKey: 'orderId'
       })
     }
   }
@@ -37,6 +43,10 @@ module.exports = (sequelize, DataTypes) => {
       allowNull: false
     },
     paymentProof: {
+      type: DataTypes.STRING,
+      allowNull: false
+    },
+    note: {
       type: DataTypes.STRING,
       allowNull: false
     },

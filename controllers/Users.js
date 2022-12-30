@@ -155,7 +155,8 @@ const detailSeller = async (req, res) => {
             where : { sellerId: sellerId },
             include: { 
                 model: Users,
-                attributes: ['firstName', 'lastName']  },
+                attributes: ['firstName', 'lastName'] 
+            },
             attributes: ['photoProfile', 'description']
         })
 
@@ -171,4 +172,21 @@ const detailSeller = async (req, res) => {
     }
 }
 
-module.exports = { Register, Login, RegSeller, getUsers, getSeller, detailSeller };
+const detailMySeller = async (req, res) => {
+    try {
+        const { userId, firstName, lastName, username, email, role, phoneNumber, seller, sellerId } = data_user;
+
+        return res.status(200).json({
+            data : {
+                userId, firstName, lastName, username, email, role, phoneNumber, seller, sellerId
+            }
+        })
+    } catch (error) {
+        console.log(`${req.method} ${req.originalUrl} : ${error.message}`);
+        return res.status(400).json({
+          message: 'Failed to Fetch Seller',
+        });
+    }
+}
+
+module.exports = { Register, Login, RegSeller, getUsers, getSeller, detailSeller, detailMySeller };
