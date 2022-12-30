@@ -12,6 +12,10 @@ module.exports = (sequelize, DataTypes) => {
     static associate(models) {
       Packages.belongsTo(models.Services, {
         foreignKey: 'serviceId'
+      }),
+
+      Packages.hasMany(models.Orders, {
+        foreignKey: 'packageId'
       })
     }
   }
@@ -31,7 +35,7 @@ module.exports = (sequelize, DataTypes) => {
       allowNull: false
     },
     delivery: {
-      type: DataTypes.STRING,
+      type: DataTypes.INTEGER,
       allowNull: false
     },
     revision: {
@@ -47,7 +51,7 @@ module.exports = (sequelize, DataTypes) => {
       allowNull: true
     },
     maxDuration: {
-      type: DataTypes.STRING,
+      type: DataTypes.INTEGER,
       allowNull: true
     },
     price: {

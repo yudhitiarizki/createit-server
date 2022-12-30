@@ -12,16 +12,10 @@ module.exports = (sequelize, DataTypes) => {
     static associate(models) {
       Users.hasOne(models.Sellers, {
         foreignKey: 'userId'
-      })
-    }
-
-    static associate(models) {
+      }),
       Users.hasMany(models.Notifications, {
         foreignKey: 'userId'
-      })
-    }
-
-    static associate(models) {
+      }),
       Users.hasMany(models.Orders, {
         foreignKey: 'userId'
       })
@@ -49,7 +43,7 @@ module.exports = (sequelize, DataTypes) => {
     password: {
       type: DataTypes.STRING
     },
-    roles: {
+    role: {
       type: DataTypes.INTEGER
     },
     phoneNumber: {

@@ -12,30 +12,18 @@ module.exports = (sequelize, DataTypes) => {
     static associate(models) {
       Services.hasMany(models.Packages, {
         foreignKey: 'serviceId'
-      })
-    }
-
-    static associate(models) {
+      }),
       Services.belongsTo(models.Sellers, {
         foreignKey: 'sellerId'
-      })
-    }
-
-    static associate(models) {
+      }),
       Services.belongsTo(models.Categories, {
         foreignKey: 'categoryId'
-      })
-    }
-
-    static associate(models) {
+      }),
       Services.hasMany(models.ServiceImages, {
-        foreignKey: 'sellerId'
-      })
-    }
-
-    static associate(models) {
+        foreignKey: 'serviceId'
+      }),
       Services.hasMany(models.Reviews, {
-        foreignKey: 'sellerId'
+        foreignKey: 'serviceId'
       })
     }
 

@@ -2,16 +2,12 @@ const express = require("express");
 const router = express.Router();
 
 // Middleware
-const AuthToken = require('../middlewares/AuthToken');
 
 //function Routes
-
-
-
+const { getReviews } = require('../controllers/review');
+ 
 //router
-router.get('/test', async (req, res) => {
-    return res.json('ok');
-})
+router.get('/review/:serviceId', getReviews);
 
 
 module.exports = router;

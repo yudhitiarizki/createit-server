@@ -14,12 +14,40 @@ function decodeBase64Image(dataString) {
     return response;
   }
 
-function processRequest(req, res, next, fieldName='files', dir='files') {
+function image(req, res, next) {
     
     if(req.body.image){
-        if(!req.body[fieldName]) { next() }
         // Ambil data "image" dari file JSON
-        const imageData = req.body[fieldName];
+        const imageData = req.body.image;
+
+        // Panggil fungsi decodeBase64Image untuk mendecode data "image"
+        const image = decodeBase64Image(imageData);
+
+        // Tentukan nama file dan tipe file
+        const fileName = 'images-' + Date.now() + '.' + image.type.split('/')[1];
+        const filePath = 'public/uploads/' + dir +'/' + fileName;
+
+        // Tulis file ke dalam folder "public/uploads"
+        fs.writeFile(filePath, image.data, (error) => {
+            if (error) {
+                return next(error);
+            }
+        });
+
+        req.body.fileName = req.protocol + '://' + req.get('host') + '/' + filePath
+
+        // Lanjutkan ke middleware berikutnya
+        next();
+    }
+    next()
+};
+
+
+function file(req, res, next) {
+    
+    if(req.body.files){
+        // Ambil data "image" dari file JSON
+        const imageData = req.body.files;
 
         // Panggil fungsi decodeBase64Image untuk mendecode data "image"
         const image = decodeBase64Image(imageData);
@@ -40,9 +68,28 @@ function processRequest(req, res, next, fieldName='files', dir='files') {
         // Lanjutkan ke middleware berikutnya
         next();
     }
-    
+    next()
 };
 
 
+const Uploads = (data, directory) => {
+    const filedata = data;
+
+    // Panggil fungsi decodeBase64Image untuk mendecode data "image"
+    const decData = decodeBase64Image(filedata);
+
+    // Tentukan nama file dan tipe file
+    const fileName = directory + '-' + Date.now() + '.' + decData.type.split('/')[1];
+    const filePath = 'public/uploads/' + directory +'/' + fileName;
+
+    // Tulis file ke dalam folder "public/uploads"
+    fs.writeFile(filePath, decData.data, (error) => {
+        if (error) {
+            return next(error);
+        }
+    });
+
+    return filePath;
+}
   
-module.exports = processRequest;
+module.exports = { image, file, Uploads };

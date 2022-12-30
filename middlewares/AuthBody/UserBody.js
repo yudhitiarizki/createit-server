@@ -1,5 +1,6 @@
 const { Users } = require('../../models');
 const bcrypt = require("bcrypt");
+const { Uploads } = require('../FileUploads')
 
 const re_name = /^[a-zA-Z0-9 ]+$/;
 const re_username = /^[a-zA-Z0-9]+$/;
@@ -39,6 +40,7 @@ const AuthReg = async (req, res, next) => {
         }
     }
 
+<<<<<<< HEAD
     if (phoneNumber) {
         if (isNaN(phoneNumber)) {
             return res.status(400).send({
@@ -46,6 +48,8 @@ const AuthReg = async (req, res, next) => {
             });
         }
     }
+=======
+>>>>>>> 958cc1d825cd7c4c10ac1e0d5c99a76b5ef527e8
 
     if (firstName.match(RE_HTML_ERROR) || lastName.match(RE_HTML_ERROR) || email.match(RE_HTML_ERROR) || password.match(RE_HTML_ERROR)) {
         return res.status(400).send({
@@ -132,14 +136,15 @@ const AuthLog = async (req, res, next) => {
         password: user.password,
         phoneNumber: user.phoneNumber,
         username: user.username,
-        isAdmin: user.isAdmin
+        isAdmin: user.isAdmin,
+        role: user.role
     }
 
     next()
 }
 
 const AuthRegSel = async (req, res, next) => {
-    const { photoProfile, description, noRekening, bankName, cardHolder } = req.body;
+    var { photoProfile, description, noRekening, bankName, cardHolder } = req.body;
 
     if (cardHolder.search(re_name) === -1) {
         return res.status(412).send({
@@ -158,6 +163,9 @@ const AuthRegSel = async (req, res, next) => {
             message: 'Dont write HTML Tag on Field'
         });
     };
+
+
+    photoProfile = req.protocol + '://' + req.get('host') + '/' + Uploads(photoProfile, 'images');
 
     data_reg = {
         photoProfile, description, noRekening, bankName, cardHolder

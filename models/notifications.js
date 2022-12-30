@@ -25,6 +25,9 @@ module.exports = (sequelize, DataTypes) => {
     userId: {
       type: DataTypes.INTEGER
     },
+    type: {
+      type: DataTypes.STRING
+    },
     isRead: {
       type: DataTypes.INTEGER
     },
