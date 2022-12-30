@@ -40,16 +40,6 @@ const AuthReg = async (req, res, next) => {
         }
     }
 
-<<<<<<< HEAD
-    if (phoneNumber) {
-        if (isNaN(phoneNumber)) {
-            return res.status(400).send({
-                message: 'Phone Number must be number!'
-            });
-        }
-    }
-=======
->>>>>>> 958cc1d825cd7c4c10ac1e0d5c99a76b5ef527e8
 
     if (firstName.match(RE_HTML_ERROR) || lastName.match(RE_HTML_ERROR) || email.match(RE_HTML_ERROR) || password.match(RE_HTML_ERROR)) {
         return res.status(400).send({
