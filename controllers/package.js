@@ -1,4 +1,4 @@
-const { Packages } = require('../models');
+const { Packages, Services } = require('../models');
 
 const createPackage = async (req, res) => {
     try {
@@ -72,4 +72,56 @@ const updatePackage = async (req, res) => {
     }
 }
 
-module.exports = { createPackage, getPackage, updatePackage }
+const getPackageBySlug = async (req, res) => {
+    try {
+        const { slug } = req.params;
+
+        const service = await Services.findOne({
+            where: {
+                slug: slug
+            },
+            include: {
+                model: Packages
+            }
+        })
+
+        return res.status(200).json({
+            data: service.Packages
+        })
+    } catch (error) {
+        console.log(`${req.method} ${req.originalUrl} : ${error.message}`);
+        return res.status(400).json({
+            message: 'Failed to Retrive package',
+        });
+    }
+}
+
+const deletePackage = async (req, res) => {
+    try {
+        const { packageId } = req.params;
+
+        const deleteCount = await Packages.destroy({
+            where: {
+                packageId: packageId
+            }
+        });
+
+        if (deleteCount < 1){
+            return res.status(401).json({
+                message: 'The Packages was not properly deleted.',
+              });
+        };
+
+        return res.status(200).json({
+            message: 'Packages has been deleted'
+        });
+
+    } catch (error) {
+        console.log(`${req.method} ${req.originalUrl} : ${error.message}`);
+        return res.status(400).json({
+            message: 'Failed to Delete Package',
+        });
+    }
+}
+
+module.exports = { createPackage, getPackage, updatePackage, getPackageBySlug, deletePackage }

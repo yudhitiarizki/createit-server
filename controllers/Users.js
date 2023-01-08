@@ -51,7 +51,7 @@ const Register = async (req, res) => {
             username: user.username,
             password: hashPassword,
             role: 1
-        })
+        });
 
         res.json({message: "Register Successfully"});
     } catch (error) {
@@ -64,9 +64,7 @@ const Register = async (req, res) => {
 
 const Login = async (req, res) => {
     try {
-        const { userId, firstName, lastName, email, password, phoneNumber, username, role } = data_user;
-
-        var seller = '';
+        const { userId, firstName, lastName, email, password, seller, phoneNumber, username, role } = data_user;
         
         const accessToken = jwt.sign({ userId, firstName, lastName, email, password, phoneNumber, username, role }, process.env.ACCESS_TOKEN_SECRET, {
             expiresIn: '7d'
@@ -79,18 +77,10 @@ const Login = async (req, res) => {
         await Users.update({ refreshToken: refreshToken }, {
             where: {
                 userId: userId
-            }
+            },
         });
 
-        if (role === 2) {
-            seller = await Sellers.findOne({
-                where: {
-                    userId: userId
-                }
-            })
-        }
-
-        res.json({ userId, firstName, lastName, email, phoneNumber, username, seller, accessToken });
+        res.status(200).json({ userId, firstName, lastName, email, phoneNumber, username, seller, role, accessToken });
 
     } catch (error) {
         console.log(`${req.method} ${req.originalUrl} : ${error.message}`);

@@ -1,4 +1,4 @@
-const { Services, Sellers, ServiceImages, Reviews, sequelize, Packages, Orders } = require('../models');
+const { Services, Sellers, ServiceImages, Reviews, sequelize, Users, Packages } = require('../models');
 const { Uploads } = require('../middlewares/FileUploads')
 
 const getService = async (req, res) => {
@@ -64,23 +64,36 @@ const getTopService = async (req, res) => {
                 attributes: []
             }, {
                 model: ServiceImages
+            }, {
+                model: Packages
+            }, {
+                model: Sellers,
+                include: {
+                    model: Users
+                }
             }],
             attributes: ['serviceId', 'sellerId', 'categoryId', 'title', 'description', 'slug', 
-                [sequelize.fn('AVG', sequelize.col('Reviews.rating')), 'Rating'],
+                [sequelize.fn('AVG', sequelize.col('Reviews.rating')), 'rating'],
+                [sequelize.fn('MIN', sequelize.col('Packages.price')), 'startingPrice'],
                 [sequelize.fn('COUNT', sequelize.col('Reviews.reviewId')), 'noOfBuyer']
             ], 
             group: ['Services.serviceId'],
-            order: [['Rating', 'DESC']]
+            order: [['rating', 'DESC']]
         })
 
-        for (let index = 0; index < services.length; index++) {
-            if(services[index].dataValues.noOfBuyer){
-                var element = services[index].dataValues.noOfBuyer / 2;
-                services[index].dataValues.noOfBuyer = element
-            }
-        }
+        const service = services.map(service => {
+            const { serviceId, sellerId, title, rating, startingPrice, slug } = service.dataValues;
+            const { image } = service.ServiceImages[0];
+            const { photoProfile } = service.Seller;
+            const { firstName, lastName } = service.Seller.User;
+            const noOfBuyer = service.dataValues.noOfBuyer / 2;
+    
+            return { serviceId, sellerId, image, firstName, lastName, photoProfile, title, rating, noOfBuyer, startingPrice, slug }
+        })
 
-        let topServ = services.slice(0, 6);
+        let topServ = service.slice(0, 6);
+
+        
 
         return res.status(200).json({
             data: topServ
@@ -97,16 +110,21 @@ const getDetailService = async (req, res) => {
     try {
         const { serviceId } = req.params;
 
-        var service = await Services.findOne({
+        var services = await Services.findOne({
             where: {
                 serviceId: serviceId
             },
             include: [{
                 model: Reviews,
                 attributes: []
+            }, {
+                model: Sellers,
+                include: {
+                    model: Users
+                }
             }],
             attributes: ['serviceId', 'sellerId', 'categoryId', 'title', 'description', 'slug', 
-                [sequelize.fn('AVG', sequelize.col('Reviews.rating')), 'Rating'],
+                [sequelize.fn('AVG', sequelize.col('Reviews.rating')), 'rating'],
                 [sequelize.fn('COUNT', sequelize.col('Reviews.reviewId')), 'noOfBuyer']
             ], 
             group: ['Services.serviceId']
@@ -118,16 +136,21 @@ const getDetailService = async (req, res) => {
             }
         })
 
-        
-
-        if (service.noOfBuyer){
-            service.noOfBuyer = service.noOfBuyer / 2
+        if (services.noOfBuyer){
+            services.noOfBuyer = services.noOfBuyer / 2
         }
 
-        service.dataValues.image = image;
+        services.dataValues.image = image;
+
+        const service = () => {
+            const { serviceId, sellerId, rating, noOfBuyer, title, description, image } = services.dataValues;
+            const { firstName, lastName } = services.Seller.User;
+            const { photoProfile } = services.Seller;
+            return { serviceId, sellerId, firstName, lastName, photoProfile, rating, noOfBuyer, title, description, image,  }
+        }
         
         return res.status(200).json({
-            data: service
+            data: service()
         })
     } catch (error) {
         console.log(`${req.method} ${req.originalUrl} : ${error.message}`);
@@ -211,4 +234,64 @@ const deleteService = async (req, res) => {
     }
 }
 
-module.exports = { getService, createService, getTopService, getDetailService, UpdateService, deleteService }
+const getServiceBySlug = async (req, res) => {
+    try {
+        const { slug } = req.params;
+
+        const { serviceId } = await Services.findOne({
+            where:{
+                slug: slug
+            }
+        })
+
+        var services = await Services.findOne({
+            where: {
+                serviceId: serviceId
+            },
+            include: [{
+                model: Reviews,
+                attributes: []
+            }, {
+                model: Sellers,
+                include: {
+                    model: Users
+                }
+            }],
+            attributes: ['serviceId', 'sellerId', 'categoryId', 'title', 'description', 'slug', 
+                [sequelize.fn('AVG', sequelize.col('Reviews.rating')), 'rating'],
+                [sequelize.fn('COUNT', sequelize.col('Reviews.reviewId')), 'noOfBuyer']
+            ], 
+            group: ['Services.serviceId']
+        })
+
+        const image = await ServiceImages.findAll({
+            where: {
+                serviceId: serviceId
+            }
+        })
+
+        if (services.noOfBuyer){
+            services.noOfBuyer = services.noOfBuyer / 2
+        }
+
+        services.dataValues.image = image;
+
+        const service = () => {
+            const { serviceId, sellerId, rating, noOfBuyer, title, description, image, slug } = services.dataValues;
+            const { firstName, lastName } = services.Seller.User;
+            const { photoProfile } = services.Seller;
+            return { serviceId, sellerId, firstName, lastName, photoProfile, rating, noOfBuyer, title, description, image, slug }
+        }
+        
+        return res.status(200).json({
+            data: service()
+        })
+    } catch (error) {
+        console.log(`${req.method} ${req.originalUrl} : ${error.message}`);
+        return res.status(400).json({
+          message: 'Failed to Fetch Service',
+        });
+    }
+}
+
+module.exports = { getService, createService, getTopService, getDetailService, UpdateService, deleteService, getServiceBySlug }

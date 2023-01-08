@@ -1,4 +1,5 @@
-const { Sellers, Notifications } = require('../models')
+const { Sellers } = require('../models');
+const { SendNotification } = require('./notification');
 
 const approveSeller = async (req, res) => {
     const userId = req.body.userId
@@ -8,17 +9,12 @@ const approveSeller = async (req, res) => {
             { where: { userId: userId } }
         );
         if (aprove == 1) {
-            const notif = await Notifications.create({
-                userId: userId,
-                isRead: 0,
-                message: "Your seller account is verified."
-            });
+            SendNotification(userId, 1, "Your seller account is verified.");
         }
-        res.status(200).json({ message: 'uhuy' });
+        res.status(200).json({ message: 'Seller has been verified' });
     } catch (error) {
         res.status(400).json({ message: error.message });
     }
-
 }
 
 module.exports = { approveSeller };

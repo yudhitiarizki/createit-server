@@ -1,15 +1,11 @@
 const express = require("express");
 
 //function Routes
-const { approveSeller } = require('../controllers/admin')
-
-
-// Middleware
-const { AuthToken } = require('../middlewares/AuthLogin');
+const { paymentOrder } = require('../controllers/payment');
 
 const router = express.Router();
 
 //router
-
+router.post('/paymentorder', paymentOrder);
 
 module.exports = router;

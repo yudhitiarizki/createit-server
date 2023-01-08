@@ -1,4 +1,4 @@
-const { Users } = require('../../models');
+const { Users, Sellers } = require('../../models');
 const bcrypt = require("bcrypt");
 const { Uploads } = require('../FileUploads')
 
@@ -102,6 +102,10 @@ const AuthLog = async (req, res, next) => {
     const user = await Users.findOne({
         where: {
             username: username
+        },
+        include: {
+            model: Sellers,
+            attributes: ['sellerId', 'isVerified']
         }
     }
     );
@@ -123,10 +127,10 @@ const AuthLog = async (req, res, next) => {
         firstName: user.firstName,
         lastName: user.lastName,
         email: user.email,
+        seller: user.Seller,
         password: user.password,
         phoneNumber: user.phoneNumber,
         username: user.username,
-        isAdmin: user.isAdmin,
         role: user.role
     }
 

@@ -37,11 +37,20 @@ const AuthSeller = async (req, res, next) => {
                 }
             })
 
-            if (seller.isVerified === 0){
+
+            if(seller){
+                if (seller.isVerified === 0){
+                    return res.status(400).json({
+                        message: 'Waiting for acc Admin'
+                    })
+                }
+            } else {
                 return res.status(400).json({
-                    message: 'Waiting for acc Admin'
+                    message: "Apply Seller first!"
                 })
             }
+
+            
             
             data_user = {
                 userId: decoded.userId,

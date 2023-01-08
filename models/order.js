@@ -42,7 +42,7 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.INTEGER,
       allowNull: false
     },
-    paymentProof: {
+    paymentMethod: {
       type: DataTypes.STRING,
       allowNull: false
     },
@@ -53,6 +53,10 @@ module.exports = (sequelize, DataTypes) => {
     status: {
       type: DataTypes.STRING,
       allowNull: false
+    },
+    response: {
+      type: DataTypes.TEXT,
+      allowNull: true
     },
     revisionLeft: {
       type: DataTypes.INTEGER,

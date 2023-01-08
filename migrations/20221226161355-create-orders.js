@@ -17,7 +17,7 @@ module.exports = {
         type: Sequelize.INTEGER,
         allowNull: false
       },
-      paymentProof: {
+      paymentMethod: {
         type: Sequelize.STRING,
         allowNull: false
       },
@@ -28,6 +28,10 @@ module.exports = {
       status: {
         type: Sequelize.STRING,
         allowNull: false
+      },
+      response: {
+        type: Sequelize.TEXT,
+        allowNull: true
       },
       revisionLeft: {
         type: Sequelize.INTEGER,

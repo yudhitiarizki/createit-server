@@ -1,26 +1,52 @@
-const { Orders, Packages, Services, Sellers, Users, OrderFiles, OrderNotes } = require('../models');
+const { Orders, Packages, Services, Sellers, Users, OrderFiles, OrderNotes, ServicesImages } = require('../models');
 const { Op } = require('sequelize');
 const { SendNotification } = require('./notification');
-const { Uploads } = require('../middlewares/FileUploads')
-
+const { Uploads } = require('../middlewares/FileUploads');
+const { Api, Parameter } = require('../config/payment')
 
 const createOrder = async (req, res) => {
     try {
-        const { packageId, note, paymentProof, status, revisionLeft } = data_order
+        const { packageId, note, paymentMethod, bankName, status, revisionLeft } = data_order
         const userIdSeller = data_seller.userId;
         const { userId } = data_user;
 
-        await Orders.create({
-            userId, packageId, note, paymentProof, status, revisionLeft
+        const { orderId } = await Orders.create({
+            userId, packageId, note, paymentMethod, status, revisionLeft
+        });
+
+        const package = await Packages.findOne({
+            where: {
+                packageId: packageId
+            },
+            include: {
+                model: Services
+            }
         })
 
-        SendNotification(userIdSeller, 3, "There is new order. Check the payment");
+        const param = Parameter(orderId, paymentMethod, bankName, data_user, package);
 
-        return res.status(200).json({
-            message: 'Order has been created!'
+        Api.charge(param).then(async (chargeResponse)=>{
+            console.log('chargeResponse:',JSON.stringify(chargeResponse));
+            await Orders.update({response: JSON.stringify(chargeResponse)},
+                { where: {
+                    orderId: orderId
+                }}); 
+
+            SendNotification(userId, 1, "Order has been created! please pay first");
+            SendNotification(userIdSeller, 2,  "Request Order Here!");
+
+            return res.status(200).json({
+                message: 'Order has been created!',
+                data: chargeResponse
+            });
         })
+        .catch((error)=>{
+            console.log(`${req.method} ${req.originalUrl} : ${error.message}`);
+            return res.status(400).json({
+                message: 'Failed to create orders',
+            });
+        });
 
-        
     } catch (error) {
         console.log(`${req.method} ${req.originalUrl} : ${error.message}`);
         return res.status(400).json({
@@ -57,10 +83,10 @@ const getOrderUser = async (req, res) => {
         const order = orders.map((order) => {
             const { firstName, lastName } = order.Package.Service.Seller.User;
             const { title } = order.Package.Service;
-            const { type } = order.Package;
-            const { note, status, revisionLeft } = order;
+            const { type, orderId, price } = order.Package;
+            const { note, status, revisionLeft, response, createdAt } = order;
 
-            return { firstName, lastName, title, type, note, status, revisionLeft }
+            return { orderId, firstName, lastName, title, type, price, note, status, revisionLeft, response, createdAt }
         })
 
         return res.status(200).json({
@@ -218,7 +244,7 @@ const getOrderPayment = async (req, res) => {
     try {
         const order = await Orders.findAll({
             where: {
-                status: "Checking payment"
+                status: "Waiting payment"
             }
         });
 
@@ -367,12 +393,15 @@ const getOrderPending = async (req, res) => {
     try {
         const orders = await Orders.findAll({
             where: {
-                status: "Pending"
+                status: "pending"
             },
             include: [{
                 model: Packages,
                 include: {
                     model: Services,
+                    include: {
+                        ServicesImages
+                    }
                 } 
             }, {
                 model: Users
@@ -380,12 +409,13 @@ const getOrderPending = async (req, res) => {
         });
 
         const order = orders.map((order) => {
-            const { title } = order.Package.Service;
+            const { title, } = order.Package.Service;
+            const image = order.Package.Service.ServicesImages;
             const { type, delivery, revision, noOfConcept, noOfPages, maxDuration, price } = order.Package;
             const { username, firstName, lastName } = order.User
             const { orderId, userId, note } = order; 
 
-            return { orderId, userId, username, firstName, lastName, title, type, delivery, revision, noOfConcept, noOfPages, maxDuration, price, note }
+            return { orderId, userId, image, username, firstName, lastName, title, type, delivery, revision, noOfConcept, noOfPages, maxDuration, price, note }
         });
 
         return res.status(200).json({
@@ -447,7 +477,7 @@ const progressOrder = async (req, res) => {
             },{
                 model: Packages,
                 include: {
-                    model: Services
+                    model: Services,
                 }
             }, {
                 model: OrderNotes
@@ -458,10 +488,10 @@ const progressOrder = async (req, res) => {
             const { title } = order.Package.Service;
             const { type, delivery, revision, noOfConcept, noOfPages, maxDuration } = order.Package;
             const { username, firstName, lastName } = order.User
-            const { orderId, userId, note } = order; 
+            const { orderId, userId, note, createdAt, updatedAt } = order; 
             const orderNotes = order.OrderNotes;
 
-            return { orderId, userId, username, firstName, lastName, title, type, delivery, revision, noOfConcept, noOfPages, maxDuration, note, orderNotes }
+            return { orderId, userId, image, username, firstName, lastName, title, type, delivery, revision, noOfConcept, noOfPages, maxDuration, note, orderNotes, createdAt, updatedAt }
         })
 
         return res.status(200).json({

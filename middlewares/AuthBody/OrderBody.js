@@ -4,7 +4,7 @@ const { Uploads } = require('../FileUploads');
 const RE_HTML_ERROR = /<[\s\S]*?>/; 
 
 const AuthOrder = async (req, res, next) => {
-    var { packageId, note, paymentProof } = req.body;
+    var { packageId, note, paymentMethod, bankName } = req.body;
 
     if( note.match(RE_HTML_ERROR) ){
         return res.status(400).send({
@@ -25,11 +25,9 @@ const AuthOrder = async (req, res, next) => {
     })
 
     const seller = package.Service.Seller;
-
-    paymentProof = req.protocol + '://' + req.get('host') + '/' + Uploads(paymentProof, 'images');
     
     data_order = {
-        packageId, note, paymentProof, status: "Checking payment", revisionLeft: package.revision 
+        packageId, note, paymentMethod, status: "Waiting payment", revisionLeft: package.revision , bankName
     };
 
     data_seller = seller;
