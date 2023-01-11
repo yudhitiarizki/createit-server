@@ -12,6 +12,9 @@ module.exports = {
       orderId: {
         type: Sequelize.INTEGER
       },
+      upldFileType: {
+        type: Sequelize.INTEGER
+      },
       file: {
         type: Sequelize.STRING
       },

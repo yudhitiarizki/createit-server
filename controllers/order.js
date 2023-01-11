@@ -1,7 +1,7 @@
-const { Orders, Packages, Services, Sellers, Users, OrderFiles, OrderNotes, ServicesImages } = require('../models');
+const { Orders, Packages, Services, Sellers, Users, OrderFiles, OrderNotes, ServiceImages } = require('../models');
 const { Op } = require('sequelize');
 const { SendNotification } = require('./notification');
-const { Uploads } = require('../middlewares/FileUploads');
+const { uploadFileRar } = require('../middlewares/FileUploads');
 const { Api, Parameter } = require('../config/payment')
 
 const createOrder = async (req, res) => {
@@ -391,17 +391,43 @@ const orderDone = async (req, res) => {
 
 const getOrderPending = async (req, res) => {
     try {
+        const { sellerId } = data_user;
+        
+        const seller = await Services.findAll({
+            where: {
+                sellerId: sellerId
+            },
+            attributes: ['serviceId'],
+            include: {
+                model: Packages,
+                attributes: ['serviceId', 'packageId'],
+            }
+        })
+
+
+        const  packageId = [];
+
+        seller.map(or => {
+            const x = or.Packages.map(y => {
+                packageId.push(y.packageId)
+                return y.packageId
+            });
+            return x
+        })
+        
         const orders = await Orders.findAll({
             where: {
-                status: "pending"
+                [Op.and]: [{status: 'pending'}, {packageId: {
+                    [Op.or]: packageId
+                }}]
             },
             include: [{
                 model: Packages,
                 include: {
                     model: Services,
-                    include: {
-                        ServicesImages
-                    }
+                    include: [{
+                        model: ServiceImages
+                    }]
                 } 
             }, {
                 model: Users
@@ -410,7 +436,7 @@ const getOrderPending = async (req, res) => {
 
         const order = orders.map((order) => {
             const { title, } = order.Package.Service;
-            const image = order.Package.Service.ServicesImages;
+            const image = order.Package.Service.ServiceImages[0].image;
             const { type, delivery, revision, noOfConcept, noOfPages, maxDuration, price } = order.Package;
             const { username, firstName, lastName } = order.User
             const { orderId, userId, note } = order; 
@@ -466,11 +492,37 @@ const orderWorking = async (req, res) => {
 
 const progressOrder = async (req, res) => {
     try {
+        const { sellerId } = data_user;
+        
+        const seller = await Services.findAll({
+            where: {
+                sellerId: sellerId
+            },
+            attributes: ['serviceId'],
+            include: {
+                model: Packages,
+                attributes: ['serviceId', 'packageId'],
+            }
+        })
+
+
+        const  packageId = [];
+
+        seller.map(or => {
+            const x = or.Packages.map(y => {
+                packageId.push(y.packageId)
+                return y.packageId
+            });
+            return x
+        })
+
+
         const orders = await Orders.findAll({
             where: {
-                status: {
-                    [Op.or]: ["Revising", "Working"]
-                }
+                [Op.and]: [
+                    {status: {[Op.or]: ["Revising", "Working"]}}, 
+                    {packageId: {[Op.or]: packageId}}
+                ]
             },
             include: [{
                 model: Users
@@ -478,6 +530,9 @@ const progressOrder = async (req, res) => {
                 model: Packages,
                 include: {
                     model: Services,
+                    include: {
+                        model: ServiceImages
+                    }
                 }
             }, {
                 model: OrderNotes
@@ -486,12 +541,13 @@ const progressOrder = async (req, res) => {
 
         const order = orders.map((order) => {
             const { title } = order.Package.Service;
+            const image = order.Package.Service.ServiceImages[0].image;
             const { type, delivery, revision, noOfConcept, noOfPages, maxDuration } = order.Package;
             const { username, firstName, lastName } = order.User
-            const { orderId, userId, note, createdAt, updatedAt } = order; 
+            const { orderId, userId, note, createdAt, status, updatedAt } = order; 
             const orderNotes = order.OrderNotes;
 
-            return { orderId, userId, image, username, firstName, lastName, title, type, delivery, revision, noOfConcept, noOfPages, maxDuration, note, orderNotes, createdAt, updatedAt }
+            return { orderId, userId, image, username, firstName, lastName, title, type, status, delivery, revision, noOfConcept, noOfPages, maxDuration, note, orderNotes, createdAt, updatedAt }
         })
 
         return res.status(200).json({
@@ -508,11 +564,16 @@ const progressOrder = async (req, res) => {
 
 const uploadFile = async (req, res) => {
     try {
-        var { orderId, file } = req.body;
 
-        file = req.protocol + '://' + req.get('host') + '/' + Uploads(file, 'files');
+        var { orderId, upldFileType } = req.body;
 
-        await OrderFiles.create({ orderId, file });
+        if (upldFileType === 1){
+            const file = req.protocol + '://' + req.get('host') + '/' + uploadFileRar(req.body.file);
+            await OrderFiles.create({ orderId, upldFileType, file });
+        } else {
+            const { file } = req.body;
+            await OrderFiles.create({ orderId, upldFileType, file });
+        }
 
         return res.status(200).json({
             message: "Success to upload file"

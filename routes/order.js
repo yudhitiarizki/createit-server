@@ -3,7 +3,7 @@ const router = express.Router();
 
 // Middleware
 const { AuthOrder } = require('../middlewares/AuthBody/OrderBody')
-const { AuthToken, AuthAdmin, AuthSeller } = require('../middlewares/AuthLogin')
+const { AuthToken, AuthAdmin, AuthSeller } = require('../middlewares/AuthLogin');
 
 //function Routes
 const { createOrder, getOrderUser, getDetailOrder, approveOrder, revision, getOrderPayment, orderVerif, getOrderApprove, orderDone, getOrderPending, orderWorking, progressOrder, uploadFile } = require('../controllers/order')

@@ -25,6 +25,9 @@ module.exports = (sequelize, DataTypes) => {
     orderId: {
       type: DataTypes.INTEGER
     },
+    upldFileType: {
+      type: DataTypes.INTEGER
+    },
     file: {
       type: DataTypes.STRING
     },

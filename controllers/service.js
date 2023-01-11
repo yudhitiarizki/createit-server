@@ -1,4 +1,4 @@
-const { Services, Sellers, ServiceImages, Reviews, sequelize, Users, Packages } = require('../models');
+const { Services, Sellers, ServiceImages, Reviews, sequelize, Users, Packages, Orders } = require('../models');
 const { Uploads } = require('../middlewares/FileUploads')
 
 const getService = async (req, res) => {
@@ -37,7 +37,6 @@ const createService = async (req, res) => {
 
         image.forEach(async (img) => {
             const imageName = req.protocol + '://' + req.get('host') + '/' + Uploads(img, 'images');
-            console.log(imageName)
             await ServiceImages.create({
                 image: imageName,
                 serviceId: service.serviceId
@@ -86,7 +85,7 @@ const getTopService = async (req, res) => {
             const { image } = service.ServiceImages[0];
             const { photoProfile } = service.Seller;
             const { firstName, lastName } = service.Seller.User;
-            const noOfBuyer = service.dataValues.noOfBuyer / 2;
+            const noOfBuyer = service.dataValues.noOfBuyer;
     
             return { serviceId, sellerId, image, firstName, lastName, photoProfile, title, rating, noOfBuyer, startingPrice, slug }
         })
@@ -144,9 +143,9 @@ const getDetailService = async (req, res) => {
 
         const service = () => {
             const { serviceId, sellerId, rating, noOfBuyer, title, description, image } = services.dataValues;
-            const { firstName, lastName } = services.Seller.User;
+            const { firstName, lastName, userId } = services.Seller.User;
             const { photoProfile } = services.Seller;
-            return { serviceId, sellerId, firstName, lastName, photoProfile, rating, noOfBuyer, title, description, image,  }
+            return { serviceId, userId, sellerId, firstName, lastName, photoProfile, rating, noOfBuyer, title, description, image,  }
         }
         
         return res.status(200).json({
@@ -250,12 +249,21 @@ const getServiceBySlug = async (req, res) => {
             },
             include: [{
                 model: Reviews,
-                attributes: []
+                include: {
+                    model: Orders,
+                    attributes: ['orderId'],
+                    include: {
+                        model: Users,
+                        attributes: ['firstName', 'lastName'],
+                    }
+                }
             }, {
                 model: Sellers,
                 include: {
                     model: Users
                 }
+            }, {
+                model: Packages
             }],
             attributes: ['serviceId', 'sellerId', 'categoryId', 'title', 'description', 'slug', 
                 [sequelize.fn('AVG', sequelize.col('Reviews.rating')), 'rating'],
@@ -277,15 +285,16 @@ const getServiceBySlug = async (req, res) => {
         services.dataValues.image = image;
 
         const service = () => {
-            const { serviceId, sellerId, rating, noOfBuyer, title, description, image, slug } = services.dataValues;
-            const { firstName, lastName } = services.Seller.User;
+            const { serviceId, sellerId, rating, noOfBuyer, title, description, image, slug, Packages, Reviews } = services.dataValues;
+            const { firstName, lastName, userId } = services.Seller.User;
             const { photoProfile } = services.Seller;
-            return { serviceId, sellerId, firstName, lastName, photoProfile, rating, noOfBuyer, title, description, image, slug }
+            return { serviceId, userId, sellerId, firstName, lastName, photoProfile, rating, noOfBuyer, title, description, image, slug, Packages, Reviews }
         }
         
         return res.status(200).json({
             data: service()
         })
+
     } catch (error) {
         console.log(`${req.method} ${req.originalUrl} : ${error.message}`);
         return res.status(400).json({

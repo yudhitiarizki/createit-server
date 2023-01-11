@@ -91,5 +91,15 @@ const Uploads = (data, directory) => {
 
     return filePath;
 }
+
+const uploadFileRar = (data) => {
+    const file = data;
+    const buffer = Buffer.from(file, 'base64');
+    const fileName = 'public/uploads/files/'+ 'files' + '-' + Date.now() + '.zip';
+
+    fs.writeFileSync(fileName, buffer);
+
+    return fileName;
+}
   
-module.exports = { image, file, Uploads };
+module.exports = { image, file, Uploads, uploadFileRar };

@@ -68,8 +68,8 @@ const Parameter = ( orderId, paymentMethod, bankName, user, package ) => {
                 description: package.Service.title
             }
             return paymenttf;
-        } else if ( paymentMethod === 'cimb_click' ) {
-            paymenttf.cimb_click = {
+        } else if ( paymentMethod === 'cimb_clicks' ) {
+            paymenttf.cimb_clicks = {
                 description: package.Service.title
             }
             return paymenttf;

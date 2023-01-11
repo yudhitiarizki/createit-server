@@ -105,7 +105,7 @@ const AuthLog = async (req, res, next) => {
         },
         include: {
             model: Sellers,
-            attributes: ['sellerId', 'isVerified']
+            attributes: ['sellerId', 'isVerified', 'photoProfile']
         }
     }
     );

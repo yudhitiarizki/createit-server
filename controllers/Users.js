@@ -1,4 +1,4 @@
-const { Users, Sellers, Notifications } = require('../models');
+const { Users, Sellers, Notifications, Services, Orders, Packages, Reviews, sequelize } = require('../models');
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const { SendNotification } = require('./notification');
@@ -151,7 +151,6 @@ const getUsers = async (req, res) => {
             }
         });
 
-
         return res.json({
             data: user
         })
@@ -182,21 +181,52 @@ const getSeller = async (req, res) => {
     }
 }
 
+const findTotalOrder = (listObj) => {
+    let totalOrder = 0;
+    for (let i = 0; i < listObj.length; i++) {
+      totalOrder += listObj[i].dataValues.noOfBuyer;
+    }
+    return totalOrder;
+  }
+
 const detailSeller = async (req, res) => {
     try {
         const { sellerId } = req.params;
 
         const seller = await Sellers.findOne({ 
             where : { sellerId: sellerId },
-            include: { 
+            include: [{ 
                 model: Users,
                 attributes: ['firstName', 'lastName'] 
-            },
-            attributes: ['photoProfile', 'description']
+            }, {
+                model: Services,
+                include: {
+                    model: Reviews,
+                },
+                attributes: ['serviceId', 'sellerId', 'categoryId', 'title', 'description', 'slug', 
+                    [sequelize.fn('AVG', sequelize.col('rating')), 'ratingService'],
+                    [sequelize.fn('COUNT', sequelize.col('reviewId')), 'noOfBuyer']
+                ]
+            }],
+            attributes: ['photoProfile', 'description', 'sellerId', 'createdAt', [sequelize.fn('COUNT', sequelize.col('Services.serviceId')), 'serviceSold']]
         })
 
+        const totalRating = seller.Services.reduce((sum, rating) => sum + rating.dataValues.ratingService, 0)
+        const averageRating = totalRating / seller.Services.length ;
+
+        console.log(seller)
+
+        const data = () => {
+            const { photoProfile, description, sellerId, createdAt, serviceSold } = seller.dataValues;
+            const { firstName, lastName } = seller.User;
+            const rating = averageRating;
+            const noOfBuyer = findTotalOrder(seller.Services);
+
+            return { photoProfile, description, sellerId, createdAt, serviceSold, firstName, lastName, rating, noOfBuyer  }
+        }
+
         return res.status(200).json({
-            data: seller
+            data: data()
         })
 
     } catch (error) {

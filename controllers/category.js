@@ -79,7 +79,7 @@ const getCategoryById = async (req, res) => {
 
             return { serviceId, sellerId, image, firstName, lastName, photoProfile, title, rating, noOfBuyer, startingPrice, slug }
           } else {
-            return
+            return;
           }
         })
         
