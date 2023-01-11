@@ -30,6 +30,9 @@ module.exports = {
       phoneNumber: {
         type: Sequelize.STRING
       },
+      verified: {
+        type: Sequelize.BOOLEAN
+      },
       refreshToken: {
         type: Sequelize.STRING
       },

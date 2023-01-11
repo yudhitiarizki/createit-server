@@ -63,7 +63,7 @@ const getOrderUser = async (req, res) => {
             where: {
                 userId
             },
-            include: {
+            include: [{
                 model: Packages,
                 include: {
                     model: Services,
@@ -75,18 +75,23 @@ const getOrderUser = async (req, res) => {
                         }
                     }
                 }
-                
-            } 
+            }, {
+                model: OrderFiles,
+                order: ['createdAt', 'DESC'],
+            }, {
+                model: OrderNotes,
+                order: ['createdAt', 'DESC'],
+            }] 
         });
 
 
         const order = orders.map((order) => {
             const { firstName, lastName } = order.Package.Service.Seller.User;
             const { title } = order.Package.Service;
-            const { type, orderId, price } = order.Package;
-            const { note, status, revisionLeft, response, createdAt } = order;
+            const { type, price } = order.Package;
+            const { note, status, revisionLeft, response, createdAt, orderId, OrderFiles, OrderNotes} = order;
 
-            return { orderId, firstName, lastName, title, type, price, note, status, revisionLeft, response, createdAt }
+            return { orderId, firstName, lastName, title, type, price, note, status, revisionLeft, response, createdAt, OrderFiles, OrderNotes }
         })
 
         return res.status(200).json({
@@ -150,9 +155,9 @@ const getDetailOrder = async (req, res) => {
 
 const approveOrder = async (req, res) => {
     try {
-        const { orderId, status } = req.body;
+        const { orderId } = req.body;
 
-        const updateCount = await Orders.update({status}, {
+        const updateCount = await Orders.update({status: 'Approved'}, {
             where: {
                 orderId: orderId
             }

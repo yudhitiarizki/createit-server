@@ -22,4 +22,10 @@ app.get('/', function(req, res) {
     res.sendFile(path.join(public + "index.html"));
 });
 
+app.get('/download/:fileName', (req, res) => {
+    const { fileName } = req.params;
+    const file = __dirname + `/public/uploads/files/${fileName}`;
+    res.download(file); // Set disposition and send it.
+})
+
 app.listen(PORT, () => console.log(`Server Running on PORT ${PORT}`))

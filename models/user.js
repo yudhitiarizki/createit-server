@@ -49,6 +49,9 @@ module.exports = (sequelize, DataTypes) => {
     phoneNumber: {
       type: DataTypes.STRING
     },
+    verified: {
+      type: DataTypes.BOOLEAN
+    },
     refreshToken: {
       type: DataTypes.STRING
     }

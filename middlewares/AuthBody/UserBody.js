@@ -116,6 +116,12 @@ const AuthLog = async (req, res, next) => {
         })
     };
 
+    if(!user.verified){
+        return res.status(412).send({
+            message: 'Your account cannot verify. Check Email First!'
+        })
+    }
+
     const match = await bcrypt.compare(password, user.password);
 
     if (!match) {

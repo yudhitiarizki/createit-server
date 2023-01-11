@@ -1,4 +1,5 @@
 const { Users, Sellers, Notifications, Services, Orders, Packages, Reviews, sequelize } = require('../models');
+const { VerifyEmail, EmailToken } = require('./VerifyEmail')
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const { SendNotification } = require('./notification');
@@ -93,10 +94,15 @@ const Register = async (req, res) => {
             phoneNumber: user.phoneNumber, 
             username: user.username,
             password: hashPassword,
-            role: 1
+            role: 1,
+            verified: false
         });
 
-        res.json({message: "Register Successfully"});
+        const token = EmailToken(user.email)
+
+        VerifyEmail(user.email, token)
+
+        res.json({message: "Register Successfully, Check your email to verify!"});
     } catch (error) {
         console.log(`${req.method} ${req.originalUrl} : ${error.message}`);
         return res.status(400).json({
