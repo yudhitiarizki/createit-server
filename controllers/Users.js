@@ -6,7 +6,7 @@ require('dotenv').config();
 
 const approveSeller = async (req, res) => {
     try {
-        const userId = req.body.userId
+        const { userId } = req.body
 
         const updateCount = await Sellers.update(
             { isVerified: 1 },
@@ -24,13 +24,56 @@ const approveSeller = async (req, res) => {
         SendNotification(userId, 1, "Your seller account is verified.");
 
         return res.status(200).json({ 
-            message: 'uhuy'
+            message: 'Seller has been Verified!'
         });
 
     } catch (error) {
         console.log(`${req.method} ${req.originalUrl} : ${error.message}`);
         return res.status(400).json({
             message: 'Failed to verify Seller',
+        });
+    }
+
+}
+
+const rejectSeller = async (req, res) => {
+    try {
+        const { userId } = req.body;
+
+        const updateCount = await Users.update(
+            { role: 1 },
+            { where: {
+                userId: userId
+            }})
+        
+        if (updateCount < 1){
+            return res.status(400).json({
+                message: 'Reject not completed!'
+            })
+        }
+
+        const rejectCount = await Sellers.destroy(
+            { where: { 
+                userId: userId 
+            }}
+        );
+
+        if (rejectCount < 1){
+            return res.status(400).json({
+                message: 'Reject not completed!'
+            })
+        }
+
+        SendNotification(userId, 1, "Your seller apply is reject. Please try again later!");
+
+        return res.status(200).json({ 
+            message: 'Seller has been Rejected!'
+        });
+
+    } catch (error) {
+        console.log(`${req.method} ${req.originalUrl} : ${error.message}`);
+        return res.status(400).json({
+            message: 'Failed to reject Seller',
         });
     }
 
@@ -148,6 +191,9 @@ const getUsers = async (req, res) => {
         var user = await Users.findAll({
             include: {
                 model: Sellers
+            },
+            where: {
+                isVerified: 0
             }
         });
 
@@ -165,13 +211,23 @@ const getUsers = async (req, res) => {
 const getSeller = async (req, res) => {
     try {
         var seller = await Sellers.findAll({
+            where: {
+                isVerified: 0
+            },
             include: {
                 model: Users
             }
         });
 
+        const data = seller.map( seller  => {
+            const { userId, sellerId, photoProfile, description, createdAt } = seller;
+            const { firstName, lastName, username } = seller.User
+
+            return { userId, sellerId, photoProfile, description, createdAt, firstName, lastName, username }
+        })
+
         return res.status(200).json({
-            data: seller
+            data: data
         })
     } catch (error) {
         console.log(`${req.method} ${req.originalUrl} : ${error.message}`);
@@ -254,4 +310,4 @@ const detailMySeller = async (req, res) => {
     }
 }
 
-module.exports = { Register, Login, RegSeller, getUsers, getSeller, detailSeller, detailMySeller, approveSeller };
+module.exports = { Register, Login, RegSeller, getUsers, getSeller, detailSeller, detailMySeller, approveSeller, rejectSeller };

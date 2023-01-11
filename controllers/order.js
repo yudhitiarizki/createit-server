@@ -309,28 +309,34 @@ const getOrderApprove = async (req, res) => {
             where: {
                 status: "Approved"
             },
-            include: {
+            include: [{
                 model: Packages,
                 include: {
                     model: Services,
-                    include: {
+                    include: [{
                         model: Sellers,
                         include: {
                             model: Users
                         }
-                    }
+                    }, {
+                        model: ServiceImages
+                    }]
                 } 
-            } 
+            }, {
+                model: Users
+            }]
         });
 
         const order = orders.map((order) => {
             const { firstName, lastName, username } = order.Package.Service.Seller.User;
             const { noRekening, bankName, cardHolder } = order.Package.Service.Seller
             const { title } = order.Package.Service;
+            const { image } = order.Package.Service.ServiceImages[0];
             const { type, price } = order.Package;
-            const { orderId } = order; 
+            const { orderId, createdAt } = order;
+            const User = order.User;
 
-            return { orderId, username, firstName, lastName, title, type, price, noRekening, bankName, cardHolder }
+            return { orderId, username, firstName, lastName, title, type, price, noRekening, bankName, cardHolder, image, createdAt, User }
         });
 
         return res.status(200).json({
@@ -439,9 +445,9 @@ const getOrderPending = async (req, res) => {
             const image = order.Package.Service.ServiceImages[0].image;
             const { type, delivery, revision, noOfConcept, noOfPages, maxDuration, price } = order.Package;
             const { username, firstName, lastName } = order.User
-            const { orderId, userId, note } = order; 
+            const { orderId, userId, note, createdAt } = order; 
 
-            return { orderId, userId, image, username, firstName, lastName, title, type, delivery, revision, noOfConcept, noOfPages, maxDuration, price, note }
+            return { orderId, userId, image, username, firstName, lastName, title, type, delivery, revision, noOfConcept, noOfPages, maxDuration, price, note, createdAt }
         });
 
         return res.status(200).json({
@@ -574,6 +580,24 @@ const uploadFile = async (req, res) => {
             const { file } = req.body;
             await OrderFiles.create({ orderId, upldFileType, file });
         }
+
+        const order = await Orders.findOne({
+            where: { orderId: orderId } 
+        });
+
+        const updateCount = await Orders.update({status: "Reviewing"},{
+            where:{ orderId: orderId }
+        });
+
+        if (updateCount < 1){
+            return res.status(401).json({
+                message: 'Failed to Reviewing'
+            });
+        };
+
+        const { userId } = order;
+
+        SendNotification(userId, 1, `Order #${orderId} completed, please Review!`);
 
         return res.status(200).json({
             message: "Success to upload file"

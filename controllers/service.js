@@ -207,7 +207,7 @@ const UpdateService = async (req, res) => {
 
 const deleteService = async (req, res) => {
     try {
-        const { serviceId } = req.body;
+        const { serviceId } = req.params;
 
         const deleteCount = await Services.destroy({
             where: {
@@ -303,4 +303,56 @@ const getServiceBySlug = async (req, res) => {
     }
 }
 
-module.exports = { getService, createService, getTopService, getDetailService, UpdateService, deleteService, getServiceBySlug }
+const getMyService = async (req, res) => {
+    try {
+        const { sellerId } = data_user;
+
+        var services = await Services.findAll({
+            where: {
+                sellerId
+            },
+            include: [{
+                model: Reviews,
+                attributes: []
+            }, {
+                model: ServiceImages
+            }, {
+                model: Packages
+            }, {
+                model: Sellers,
+                include: {
+                    model: Users
+                }
+            }],
+            attributes: ['serviceId', 'sellerId', 'categoryId', 'title', 'description', 'slug', 
+                [sequelize.fn('AVG', sequelize.col('Reviews.rating')), 'rating'],
+                [sequelize.fn('MIN', sequelize.col('Packages.price')), 'startingPrice'],
+                [sequelize.fn('COUNT', sequelize.col('Reviews.reviewId')), 'noOfBuyer']
+            ], 
+            group: ['Services.serviceId'],
+            order: [['rating', 'DESC']]
+        })
+
+        const service = services.map(service => {
+            const { serviceId, sellerId, title, rating, startingPrice, slug, description } = service.dataValues;
+            const { image } = service.ServiceImages[0];
+            const { photoProfile } = service.Seller;
+            const { firstName, lastName } = service.Seller.User;
+            const noOfBuyer = service.dataValues.noOfBuyer;
+    
+            return { serviceId, sellerId, image, description, firstName, lastName, photoProfile, title, rating, noOfBuyer, startingPrice, slug }
+        })
+        
+
+        return res.status(200).json({
+            data: service
+        })
+    } catch (error) {
+        console.log(`${req.method} ${req.originalUrl} : ${error.message}`);
+        return res.status(400).json({
+          message: 'Failed to Fetch Service',
+        });
+    }
+}
+
+module.exports = { getService, createService, getTopService, getDetailService, UpdateService, deleteService, getServiceBySlug, getMyService }
