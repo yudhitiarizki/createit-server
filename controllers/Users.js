@@ -280,11 +280,11 @@ const detailSeller = async (req, res) => {
 
         const data = () => {
             const { photoProfile, description, sellerId, createdAt, serviceSold } = seller.dataValues;
-            const { firstName, lastName } = seller.User;
+            const { firstName, lastName, userId } = seller.User;
             const rating = averageRating;
             const noOfBuyer = findTotalOrder(seller.Services);
 
-            return { photoProfile, description, sellerId, createdAt, serviceSold, firstName, lastName, rating, noOfBuyer  }
+            return { photoProfile, userId, description, sellerId, createdAt, serviceSold, firstName, lastName, rating, noOfBuyer  }
         }
 
         return res.status(200).json({

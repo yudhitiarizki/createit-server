@@ -546,7 +546,11 @@ const progressOrder = async (req, res) => {
                     }
                 }
             }, {
-                model: OrderNotes
+                model: OrderFiles,
+                order: ['createdAt', 'DESC'],
+            }, {
+                model: OrderNotes,
+                order: ['createdAt', 'DESC'],
             }]
         });
 
@@ -555,10 +559,9 @@ const progressOrder = async (req, res) => {
             const image = order.Package.Service.ServiceImages[0].image;
             const { type, delivery, revision, noOfConcept, noOfPages, maxDuration } = order.Package;
             const { username, firstName, lastName } = order.User
-            const { orderId, userId, note, createdAt, status, updatedAt } = order; 
-            const orderNotes = order.OrderNotes;
+            const { orderId, userId, note, createdAt, status, updatedAt, OrderNotes, OrderFiles } = order; 
 
-            return { orderId, userId, image, username, firstName, lastName, title, type, status, delivery, revision, noOfConcept, noOfPages, maxDuration, note, orderNotes, createdAt, updatedAt }
+            return { orderId, userId, image, username, firstName, lastName, title, type, status, delivery, revision, noOfConcept, noOfPages, maxDuration, note, OrderNotes, OrderFiles, createdAt, updatedAt }
         })
 
         return res.status(200).json({
