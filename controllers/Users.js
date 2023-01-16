@@ -259,7 +259,7 @@ const detailSeller = async (req, res) => {
             where : { sellerId: sellerId },
             include: [{ 
                 model: Users,
-                attributes: ['firstName', 'lastName'] 
+                attributes: ['firstName', 'lastName', 'userId'] 
             }, {
                 model: Services,
                 include: {
@@ -275,8 +275,6 @@ const detailSeller = async (req, res) => {
 
         const totalRating = seller.Services.reduce((sum, rating) => sum + rating.dataValues.ratingService, 0)
         const averageRating = totalRating / seller.Services.length ;
-
-        console.log(seller)
 
         const data = () => {
             const { photoProfile, description, sellerId, createdAt, serviceSold } = seller.dataValues;

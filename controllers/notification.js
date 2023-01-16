@@ -59,4 +59,29 @@ const readNotif = async (req, res) => {
     }
 }
 
-module.exports = { SendNotification, getNotification, readNotif }
+const deleteNotif = async (req, res) => {
+    try {
+        const { notifId } = req.params;
+        const deleteCount = await Notifications.destroy({ 
+            where: { 
+                notifId: notifId 
+            }})
+
+        if(deleteCount < 1) {
+            return res.status(400).json({
+                message: 'Notif not yet delete'
+            })
+        }
+
+        return res.status(200).json({
+            message: "Notification has been delete"
+        })
+    } catch (error) {
+        console.log(`${req.method} ${req.originalUrl} : ${error.message}`);
+        return res.status(400).json({
+            message: 'Failed to delete notification',
+        });
+    }
+}
+
+module.exports = { SendNotification, getNotification, readNotif, deleteNotif }
