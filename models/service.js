@@ -11,7 +11,8 @@ module.exports = (sequelize, DataTypes) => {
      */
     static associate(models) {
       Services.hasMany(models.Packages, {
-        foreignKey: 'serviceId'
+        foreignKey: 'serviceId',
+        onDelete: 'CASCADE'
       }),
       Services.belongsTo(models.Sellers, {
         foreignKey: 'sellerId'
@@ -20,10 +21,12 @@ module.exports = (sequelize, DataTypes) => {
         foreignKey: 'categoryId'
       }),
       Services.hasMany(models.ServiceImages, {
-        foreignKey: 'serviceId'
+        foreignKey: 'serviceId',
+        onDelete: 'CASCADE'
       }),
       Services.hasMany(models.Reviews, {
-        foreignKey: 'serviceId'
+        foreignKey: 'serviceId',
+        onDelete: 'CASCADE'
       })
     }
 

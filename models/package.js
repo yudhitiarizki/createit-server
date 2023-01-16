@@ -15,7 +15,8 @@ module.exports = (sequelize, DataTypes) => {
       }),
 
       Packages.hasMany(models.Orders, {
-        foreignKey: 'packageId'
+        foreignKey: 'packageId',
+        onDelete: 'CASCADE'
       })
     }
   }

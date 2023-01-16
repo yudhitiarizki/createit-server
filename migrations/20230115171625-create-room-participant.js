@@ -9,7 +9,9 @@ module.exports = {
       },
       roomId: {
         type: Sequelize.INTEGER,
-        allowNull: false
+        allowNull: false,
+        references: { model: 'Rooms', key: 'roomId' },
+        onDelete: 'CASCADE',
       },
       role: {
         type: Sequelize.TEXT,

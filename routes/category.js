@@ -10,7 +10,7 @@ const { createcategory, getcategory, getCategoryById } = require("../controllers
 
 //router
 router.get("/category",  getcategory);
-router.post("/category", AuthAdmin, AuthCategory, createcategory);
+router.post("/category", AuthCategory, createcategory);
 router.get("/category/:categoryId", getCategoryById);
 
 

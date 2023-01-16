@@ -14,7 +14,8 @@ module.exports = (sequelize, DataTypes) => {
         foreignKey: 'userId'
       }),
       Sellers.hasMany(models.Services, {
-        foreignKey: 'sellerId'
+        foreignKey: 'sellerId',
+        onDelete: 'CASCADE'
       })
     }
   }

@@ -11,11 +11,15 @@ module.exports = {
       },
       orderId: {
         type: Sequelize.INTEGER,
-        allowNull: false
+        allowNull: false,
+        references: { model: 'Orders', key: 'orderId' },
+        onDelete: 'CASCADE',
       },
       serviceId: {
         type: Sequelize.INTEGER,
-        allowNull: false
+        allowNull: false,
+        references: { model: 'Services', key: 'serviceId' },
+        onDelete: 'CASCADE',
       },
       review: {
         type: Sequelize.TEXT

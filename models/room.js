@@ -10,7 +10,14 @@ module.exports = (sequelize, DataTypes) => {
      * The `models/index` file will call this method automatically.
      */
     static associate(models) {
-      // define association here
+      Rooms.hasMany(models.RoomParticipants, {
+        foreignKey: 'roomId',
+        onDelete: 'CASCADE'
+      });
+      Rooms.hasMany(models.Messages, {
+        foreignKey: 'roomId',
+        onDelete: 'CASCADE'
+      });
     }
   }
   Rooms.init({
@@ -19,6 +26,9 @@ module.exports = (sequelize, DataTypes) => {
       autoIncrement: true,
       primaryKey: true,
       type: DataTypes.INTEGER
+    },
+    name: {
+      type: DataTypes.STRING
     }
   }, {
     sequelize,

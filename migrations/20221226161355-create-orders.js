@@ -11,11 +11,15 @@ module.exports = {
       },
       userId: {
         type: Sequelize.INTEGER,
-        allowNull: false
+        allowNull: false,
+        references: { model: 'Users', key: 'userId' },
+        onDelete: 'CASCADE',
       },
       packageId: {
         type: Sequelize.INTEGER,
-        allowNull: false
+        allowNull: false,
+        references: { model: 'Packages', key: 'packageId' },
+        onDelete: 'CASCADE',
       },
       paymentMethod: {
         type: Sequelize.STRING,

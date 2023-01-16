@@ -10,7 +10,9 @@ module.exports = {
         type: Sequelize.INTEGER
       },
       orderId: {
-        type: Sequelize.INTEGER
+        type: Sequelize.INTEGER,
+        references: { model: 'Orders', key: 'orderId' },
+        onDelete: 'CASCADE',
       },
       upldFileType: {
         type: Sequelize.INTEGER

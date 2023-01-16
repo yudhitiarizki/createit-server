@@ -11,7 +11,8 @@ module.exports = (sequelize, DataTypes) => {
      */
     static associate(models) {
       Orders.belongsTo(models.Users, {
-        foreignKey: 'userId'
+        foreignKey: 'userId',
+        onDelete: 'CASCADE'
       }),
       Orders.belongsTo(models.Packages, {
         foreignKey: 'packageId'
@@ -20,10 +21,12 @@ module.exports = (sequelize, DataTypes) => {
         foreignKey: 'orderId'
       }),
       Orders.hasMany(models.OrderNotes, {
-        foreignKey: 'orderId'
+        foreignKey: 'orderId',
+        onDelete: 'CASCADE'
       })
       Orders.hasMany(models.OrderFiles, {
-        foreignKey: 'orderId'
+        foreignKey: 'orderId',
+        onDelete: 'CASCADE'
       })
     }
   }
