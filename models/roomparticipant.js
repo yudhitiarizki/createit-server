@@ -12,10 +12,19 @@ module.exports = (sequelize, DataTypes) => {
     static associate(models) {
       RoomParticipants.belongsTo(models.Rooms, {
         foreignKey: 'roomId'
+      }),
+      RoomParticipants.belongsTo(models.Users, {
+        foreignKey: 'userId'
       })
     }
   }
   RoomParticipants.init({
+    participantId: {
+      allowNull: false,
+      autoIncrement: true,
+      primaryKey: true,
+      type: DataTypes.INTEGER
+    },
     userId: {
       type: DataTypes.INTEGER,
       allowNull: false
@@ -25,7 +34,7 @@ module.exports = (sequelize, DataTypes) => {
       allowNull: false
     },
     role: {
-      type: DataTypes.TEXT,
+      type: DataTypes.INTEGER,
       allowNull: false
     },
   }, {

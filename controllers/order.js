@@ -428,7 +428,7 @@ const getOrderPending = async (req, res) => {
         
         const orders = await Orders.findAll({
             where: {
-                [Op.and]: [{status: 'pending'}, {packageId: {
+                [Op.and]: [{status: 'settlement'}, {packageId: {
                     [Op.or]: packageId
                 }}]
             },
@@ -578,11 +578,10 @@ const progressOrder = async (req, res) => {
 
 const uploadFile = async (req, res) => {
     try {
-
-        var { orderId, upldFileType } = req.body;
+        var { orderId, upldFileType, fileName } = req.body;
 
         if (upldFileType === 1){
-            const file = req.protocol + '://' + req.get('host') + '/' + uploadFileRar(req.body.file);
+            const file = req.protocol + '://' + req.get('host') + '/' + uploadFileRar(req.body.file, fileName);
             await OrderFiles.create({ orderId, upldFileType, file });
         } else {
             const { file } = req.body;

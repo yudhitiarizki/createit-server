@@ -3,7 +3,7 @@ const { Uploads } = require('../middlewares/FileUploads')
 
 const getService = async (req, res) => {
     try {
-        const service = await Services.findAll({
+        const services = await Services.findAll({
             include: [{
                 model:  ServiceImages,
                 attributes: ['image']
@@ -24,15 +24,23 @@ const getService = async (req, res) => {
             ]
         });
 
-        const data = service.map(service => {
-            const { serviceId, categoryId, title, description, slug, rating, noOfBuyer,startingPrice,  Reviews, ServiceImages } = service.dataValues;
-            const { firstName, lastName, userId } = service.Seller.User;
-            const { photoProfile } = service.Seller;
-            return { firstName, lastName, userId, serviceId, photoProfile, startingPrice, categoryId, title, description, slug, rating, noOfBuyer, Reviews, ServiceImages }
-        })
+        const data = () => {
+            if ( services[0].serviceId ) {
+                const service = services.map(serv => {
+                    const { serviceId, categoryId, title, description, slug, rating, noOfBuyer,startingPrice,  Reviews, ServiceImages } = serv.dataValues;
+                    const { firstName, lastName, userId } = serv.Seller.User;
+                    const { photoProfile } = serv.Seller;
+                    return { firstName, lastName, userId, serviceId, photoProfile, startingPrice, categoryId, title, description, slug, rating, noOfBuyer, Reviews, ServiceImages }
+                });
+
+                return service
+            } else {
+                return [];
+            }
+        }
 
         return res.status(200).json({
-            data: data
+            data: data()
         })
     } catch (error) {
         console.log(`${req.method} ${req.originalUrl} : ${error.message}`);
@@ -110,8 +118,6 @@ const getTopService = async (req, res) => {
         })
 
         let topServ = service.slice(0, 6);
-
-        
 
         return res.status(200).json({
             data: topServ

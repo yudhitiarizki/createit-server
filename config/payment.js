@@ -1,9 +1,11 @@
+require('dotenv').config();
+
 const midtransClient = require('midtrans-client');
 // Create Core API instance
 const Api = new midtransClient.CoreApi({
         isProduction : false,
-        serverKey : 'SB-Mid-server-umN3nQFbcCFox84QCboJvD-j',
-        clientKey : 'SB-Mid-client-kUsxGWKUctqAIxm9'
+        serverKey : process.env.MT_SERVER_KEY,
+        clientKey : process.env.MT_CLIENT_KEY
     });
 
 const Parameter = ( orderId, paymentMethod, bankName, user, package ) => {

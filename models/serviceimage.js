@@ -12,7 +12,7 @@ module.exports = (sequelize, DataTypes) => {
     static associate(models) {
       ServiceImages.belongsTo(models.Services, {
         foreignKey: 'serviceId',
-        onDelete: 'CASCADE'
+        
       })
     }
   }

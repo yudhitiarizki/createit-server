@@ -1,4 +1,5 @@
 const fs = require('fs');
+const path = require('path');
 
 function decodeBase64Image(dataString) {
     const matches = dataString.match(/^data:([A-Za-z-+\/]+);base64,(.+)$/);
@@ -13,63 +14,6 @@ function decodeBase64Image(dataString) {
   
     return response;
   }
-
-function image(req, res, next) {
-    
-    if(req.body.image){
-        // Ambil data "image" dari file JSON
-        const imageData = req.body.image;
-
-        // Panggil fungsi decodeBase64Image untuk mendecode data "image"
-        const image = decodeBase64Image(imageData);
-
-        // Tentukan nama file dan tipe file
-        const fileName = 'images-' + Date.now() + '.' + image.type.split('/')[1];
-        const filePath = 'public/uploads/' + dir +'/' + fileName;
-
-        // Tulis file ke dalam folder "public/uploads"
-        fs.writeFile(filePath, image.data, (error) => {
-            if (error) {
-                return next(error);
-            }
-        });
-
-        req.body.fileName = req.protocol + '://' + req.get('host') + '/' + filePath
-
-        // Lanjutkan ke middleware berikutnya
-        next();
-    }
-    next()
-};
-
-
-function file(req, res, next) {
-    
-    if(req.body.files){
-        // Ambil data "image" dari file JSON
-        const imageData = req.body.files;
-
-        // Panggil fungsi decodeBase64Image untuk mendecode data "image"
-        const image = decodeBase64Image(imageData);
-
-        // Tentukan nama file dan tipe file
-        const fileName = 'files-' + Date.now() + '.' + image.type.split('/')[1];
-        const filePath = 'public/uploads/' + dir +'/' + fileName;
-
-        // Tulis file ke dalam folder "public/uploads"
-        fs.writeFile(filePath, image.data, (error) => {
-            if (error) {
-                return next(error);
-            }
-        });
-
-        req.body.fileName = req.protocol + '://' + req.get('host') + '/' + filePath
-
-        // Lanjutkan ke middleware berikutnya
-        next();
-    }
-    next()
-};
 
 
 const Uploads = (data, directory) => {
@@ -92,14 +36,19 @@ const Uploads = (data, directory) => {
     return filePath;
 }
 
-const uploadFileRar = (data) => {
+const uploadFileRar = (data, Name) => {
     const file = data;
     const buffer = Buffer.from(file, 'base64');
-    const fileName = 'public/uploads/files/'+ 'files' + '-' + Date.now() + '.zip';
+    const fileExtension = path.extname(Name);
+    const fileName = 'public/uploads/files/'+ 'files' + '-' + Date.now() + fileExtension;
 
-    fs.writeFileSync(fileName, buffer);
+    fs.writeFileSync(fileName, buffer, (error) => {
+        if (error) {
+            console.log(error);
+        }
+    });
 
     return fileName;
 }
   
-module.exports = { image, file, Uploads, uploadFileRar };
+module.exports = { Uploads, uploadFileRar };

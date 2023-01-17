@@ -10,8 +10,9 @@ const package = require('./package');
 const review = require('./review');
 const notification = require('./notification');
 const admin = require('./admin')
+const chat = require('./chat')
 
 //Routes
-router.use(user, order, service, category, package, review, notification, admin);
+router.use(user, order, service, category, package, review, notification, admin, chat);
 
 module.exports = router;

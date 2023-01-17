@@ -44,11 +44,11 @@ const EmailToken = (email) => {
 
 const VerifyEmail = async (email, token) => {
     let transporter = nodemailer.createTransport({
-        host: "send.smtp.mailtrap.io",
-        port: 587,
+        host: process.env.MAIL_HOST,
+        port: process.env.MAIL_PORT,
         auth: {
-            user: "api",
-            pass: "02370ee756cabd7777bce426179c86fe"
+            user: process.env.MAIL_USER,
+            pass: process.env.MAIL_PASSWORD
         }
     });
 
