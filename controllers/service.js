@@ -3,44 +3,43 @@ const { Uploads } = require('../middlewares/FileUploads')
 
 const getService = async (req, res) => {
     try {
-        const services = await Services.findAll({
+        var services = await Services.findAll({
             include: [{
-                model:  ServiceImages,
-                attributes: ['image']
+                model: Reviews,
+                attributes: []
+            }, {
+                model: ServiceImages
+            }, {
+                model: Packages
             }, {
                 model: Sellers,
                 include: {
                     model: Users
                 }
-            }, {
-                model: Reviews
-            }, {
-                model: Packages
             }],
             attributes: ['serviceId', 'sellerId', 'categoryId', 'title', 'description', 'slug', 
                 [sequelize.fn('AVG', sequelize.col('Reviews.rating')), 'rating'],
-                [sequelize.fn('COUNT', sequelize.col('Reviews.reviewId')), 'noOfBuyer'],
                 [sequelize.fn('MIN', sequelize.col('Packages.price')), 'startingPrice'],
-            ]
-        });
+                [sequelize.fn('COUNT', sequelize.col('Reviews.reviewId')), 'noOfBuyer']
+            ], 
+            group: ['Services.serviceId'],
+            order: [['rating', 'DESC']]
+        })
 
-        const data = () => {
-            if ( services[0].serviceId ) {
-                const service = services.map(serv => {
-                    const { serviceId, categoryId, title, description, slug, rating, noOfBuyer,startingPrice,  Reviews, ServiceImages } = serv.dataValues;
-                    const { firstName, lastName, userId } = serv.Seller.User;
-                    const { photoProfile } = serv.Seller;
-                    return { firstName, lastName, userId, serviceId, photoProfile, startingPrice, categoryId, title, description, slug, rating, noOfBuyer, Reviews, ServiceImages }
-                });
+        const service = services.map(service => {
+            const { serviceId, sellerId, title, rating, startingPrice, slug } = service.dataValues;
+            const { image } = service.ServiceImages[0];
+            const { photoProfile } = service.Seller;
+            const { firstName, lastName } = service.Seller.User;
+            const noOfBuyer = service.dataValues.noOfBuyer;
+    
+            return { serviceId, sellerId, image, firstName, lastName, photoProfile, title, rating, noOfBuyer, startingPrice, slug }
+        })
 
-                return service
-            } else {
-                return [];
-            }
-        }
+        
 
         return res.status(200).json({
-            data: data()
+            data: service
         })
     } catch (error) {
         console.log(`${req.method} ${req.originalUrl} : ${error.message}`);
@@ -63,7 +62,8 @@ const createService = async (req, res) => {
         })
 
         image.forEach(async (img) => {
-            const imageName = req.protocol + '://' + req.get('host') + '/' + Uploads(img, 'images');
+            const upload = await Uploads(img, 'images');
+            const imageName = req.protocol + '://' + req.get('host') + '/' + upload;
             await ServiceImages.create({
                 image: imageName,
                 serviceId: service.serviceId
@@ -119,6 +119,8 @@ const getTopService = async (req, res) => {
 
         let topServ = service.slice(0, 6);
 
+        
+
         return res.status(200).json({
             data: topServ
         })
@@ -139,9 +141,6 @@ const getDetailService = async (req, res) => {
                 serviceId: serviceId
             },
             include: [{
-                model: Reviews,
-                attributes: []
-            }, {
                 model: Sellers,
                 include: {
                     model: Users
@@ -160,11 +159,18 @@ const getDetailService = async (req, res) => {
             }
         })
 
+        const Review = await Reviews.findAll({
+            where: {
+                serviceId: serviceId
+            }
+        })
+
         if (services.noOfBuyer){
             services.noOfBuyer = services.noOfBuyer / 2
         }
 
         services.dataValues.image = image;
+        services.dataValues.Reviews = Review ;
 
         const service = () => {
             const { serviceId, sellerId, rating, noOfBuyer, title, description, image } = services.dataValues;
@@ -188,11 +194,23 @@ const UpdateService = async (req, res) => {
     try {
         const { serviceId } = req.params;
         const { title, description, categoryId, slug } = data_service;
-        const { image } = req.body;
+        const { image, newImage } = req.body;
 
-        if(image){
+        if(newImage.length){
+            newImage.forEach(async (img) => {
+                const upload = await Uploads(img, 'images');
+                const imageName = req.protocol + '://' + req.get('host') + '/' + upload;
+                await ServiceImages.create({
+                    image: imageName,
+                    serviceId: serviceId
+                })
+            });
+        }
+
+        if(image.length){
             image.forEach(async (img) => {
-                const imageName = req.protocol + '://' + req.get('host') + '/' + Uploads(img.image, 'images');
+                const upload = await Uploads(img.image, 'images');
+                const imageName = req.protocol + '://' + req.get('host') + '/' + upload;
                 const update = await ServiceImages.update(
                     { image: imageName},
                     { where: {
@@ -273,15 +291,7 @@ const getServiceBySlug = async (req, res) => {
                 serviceId: serviceId
             },
             include: [{
-                model: Reviews,
-                include: {
-                    model: Orders,
-                    attributes: ['orderId'],
-                    include: {
-                        model: Users,
-                        attributes: ['firstName', 'lastName'],
-                    }
-                }
+                model: Reviews
             }, {
                 model: Sellers,
                 include: {
@@ -302,15 +312,37 @@ const getServiceBySlug = async (req, res) => {
                 serviceId: serviceId
             }
         })
+        
+        const review = await Reviews.findAll({
+            where: {
+                serviceId: serviceId
+            },
+            include: {
+                    model: Orders,
+                    attributes: ['orderId'],
+                    include: {
+                        model: Users,
+                        attributes: ['firstName', 'lastName'],
+                    }
+                }
+          
+        })
+        
+        const pack = await Packages.findAll({
+            where: {
+                serviceId: serviceId
+            }
+        })
 
         services.dataValues.image = image;
 
         const service = () => {
-            const { serviceId, sellerId, rating, noOfBuyer, title, description, image, slug, Packages, Reviews } = services.dataValues;
+            const { serviceId, sellerId, rating, noOfBuyer, title, description, image, slug } = services.dataValues;
             const { firstName, lastName, userId } = services.Seller.User;
             const { photoProfile } = services.Seller;
-            return { serviceId, userId, sellerId, firstName, lastName, photoProfile, rating, noOfBuyer, title, description, image, slug, Packages, Reviews }
+            return { serviceId, userId, sellerId, firstName, lastName, photoProfile, rating, noOfBuyer, title, description, image, slug, Packages: pack, Reviews: review }
         }
+      
         
         return res.status(200).json({
             data: service()
@@ -336,7 +368,8 @@ const getMyService = async (req, res) => {
                 model: Reviews,
                 attributes: []
             }, {
-                model: ServiceImages
+                model: ServiceImages,
+                order: ['createdAt', 'DESC']
             }, {
                 model: Packages
             }, {
@@ -355,13 +388,13 @@ const getMyService = async (req, res) => {
         })
 
         const service = services.map(service => {
-            const { serviceId, sellerId, title, rating, startingPrice, slug, description } = service.dataValues;
-            const { image } = service.ServiceImages[0];
+            const { serviceId, sellerId, title, rating, startingPrice, slug, description, categoryId } = service.dataValues;
+            const image = service.ServiceImages;
             const { photoProfile } = service.Seller;
             const { firstName, lastName } = service.Seller.User;
             const noOfBuyer = service.dataValues.noOfBuyer;
     
-            return { serviceId, sellerId, image, description, firstName, lastName, photoProfile, title, rating, noOfBuyer, startingPrice, slug }
+            return { serviceId, categoryId, sellerId, image, description, firstName, lastName, photoProfile, title, rating, noOfBuyer, startingPrice, slug }
         })
         
 
@@ -388,7 +421,8 @@ const getServiceBySeller = async (req, res) => {
                 model: Reviews,
                 attributes: []
             }, {
-                model: ServiceImages
+                model: ServiceImages,
+                order: ['createdAt', 'DESC']
             }, {
                 model: Packages
             }, {
@@ -407,13 +441,13 @@ const getServiceBySeller = async (req, res) => {
         })
 
         const service = services.map(service => {
-            const { serviceId, sellerId, title, rating, startingPrice, slug, description } = service.dataValues;
-            const { image } = service.ServiceImages[0];
+            const { serviceId, sellerId, title, rating, startingPrice, slug, description, categoryId } = service.dataValues;
+            const image = service.ServiceImages;
             const { photoProfile } = service.Seller;
             const { firstName, lastName } = service.Seller.User;
             const noOfBuyer = service.dataValues.noOfBuyer;
     
-            return { serviceId, sellerId, image, description, firstName, lastName, photoProfile, title, rating, noOfBuyer, startingPrice, slug }
+            return { serviceId, categoryId, sellerId, image, description, firstName, lastName, photoProfile, title, rating, noOfBuyer, startingPrice, slug }
         })
         
 

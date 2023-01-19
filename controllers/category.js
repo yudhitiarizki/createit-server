@@ -41,51 +41,46 @@ const getCategoryById = async (req, res) => {
     try {
         const { categoryId } = req.params;
 
-        const services = await Services.findAll({
-          include: [{
-            model: Packages,
-            include: {
-                model: Orders,
+        var services = await Services.findAll({
+            include: [{
+                model: Reviews,
+                attributes: []
+            }, {
+                model: ServiceImages
+            }, {
+                model: Packages
+            }, {
+                model: Sellers,
                 include: {
-                    model: Reviews
+                    model: Users
                 }
-            }
-          }, {
-              model: ServiceImages
-          }, {
-            model: Sellers,
-            include: {
-              model: Users
-            }
-          }],
-          attributes: [
-              'serviceId', 'sellerId', 'categoryId', 'title', 'description', 'slug', 
-              [sequelize.fn('AVG', sequelize.col('rating')), 'rating'], 
-              [sequelize.fn('MIN', sequelize.col('price')), 'startingPrice'],
-              [sequelize.fn('COUNT', sequelize.col('reviewId')), 'noOfBuyer']
-          ],
-          where: {
-            categoryId: categoryId
-          }
-        });
+            }],
+            attributes: ['serviceId', 'sellerId', 'categoryId', 'title', 'description', 'slug', 
+                [sequelize.fn('AVG', sequelize.col('Reviews.rating')), 'rating'],
+                [sequelize.fn('MIN', sequelize.col('Packages.price')), 'startingPrice'],
+                [sequelize.fn('COUNT', sequelize.col('Reviews.reviewId')), 'noOfBuyer']
+            ], 
+            group: ['Services.serviceId'],
+            order: [['rating', 'DESC']]
+        })
 
         const service = services.map(service => {
-          if(service.serviceId){
-            const { serviceId, sellerId, title, rating, startingPrice, slug } = service.dataValues;
+            const { serviceId, sellerId, title, rating, startingPrice, slug, categoryId } = service.dataValues;
             const { image } = service.ServiceImages[0];
             const { photoProfile } = service.Seller;
             const { firstName, lastName } = service.Seller.User;
-            const noOfBuyer = service.dataValues.noOfBuyer / 2;
-
-            return { serviceId, sellerId, image, firstName, lastName, photoProfile, title, rating, noOfBuyer, startingPrice, slug }
-          } else {
-            return;
-          }
+            const noOfBuyer = service.dataValues.noOfBuyer;
+    
+            return { categoryId, serviceId, sellerId, image, firstName, lastName, photoProfile, title, rating, noOfBuyer, startingPrice, slug }
+        })
+        
+        const data = service.filter(serv => {
+          return serv.categoryId == categoryId
         })
         
 
         return res.status(200).json({
-            data: service
+            data: data
         })
 
     } catch (error) {

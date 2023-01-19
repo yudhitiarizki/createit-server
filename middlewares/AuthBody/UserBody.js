@@ -163,9 +163,10 @@ const AuthRegSel = async (req, res, next) => {
             message: 'Dont write HTML Tag on Field'
         });
     };
+  
+    const upload = await Uploads(photoProfile, 'images');
 
-
-    photoProfile = req.protocol + '://' + req.get('host') + '/' + Uploads(photoProfile, 'images');
+    photoProfile = req.protocol + '://' + req.get('host') + '/' + upload;
 
     data_reg = {
         photoProfile, description, noRekening, bankName, cardHolder

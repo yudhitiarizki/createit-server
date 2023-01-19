@@ -6,6 +6,12 @@ const RE_HTML_ERROR = /<[\s\S]*?>/;
 const AuthOrder = async (req, res, next) => {
     var { packageId, note, paymentMethod, bankName } = req.body;
 
+    if ( paymentMethod === '' || bankName === '' ) {
+        return res.status(400).send({
+            message: 'Please choose the payment!'
+        });
+    }
+
     if( note.match(RE_HTML_ERROR) ){
         return res.status(400).send({
             message: 'Dont write HTML Tag on Field'

@@ -22,6 +22,8 @@ const io = new Server(server, {
     }
 });
 
+require('./socket')(io);
+
 const router = require('./routes/index');
 
 const PORT = process.env.PORT || 5000;
@@ -58,43 +60,5 @@ app.get('/download/:fileName', (req, res) => {
 
 server.listen(PORT, () => console.log(`Server Running on PORT ${PORT}`));
 
-let users = [];
 
-const addUser = (userId, socketId) => {
-  !users.some(user=> user.userId === userId) && 
-    users.push({userId, socketId});
-}
-
-const removeUser = (socketId) => {
-  users = users.filter(user => user.socketId !== socketId);
-}
-
-const getUser = userId => {
-  return users.find(user => user.userId === userId)
-}
-
-// Handle new connections
-io.on('connection', socket => {
-    //handle connect
-    console.log('A user connected: '+`${socket.id}`);
-    socket.on('addUser', userId => {
-      addUser(userId, socket.id);
-      io.emit('getUsers', users)
-    })
-  
-    // Handle disconnection
-    socket.on('disconnect', () => {
-      console.log('A user disconnected');
-      removeUser(socket.id)
-      io.emit('getUsers', users)
-    });
-
-    // Handle event from client
-    socket.on('sendMessage', ({senderId, reseiverId, text, date}) => {
-      const user = getUser(reseiverId);
-      io.to(user.socketId).emit('getMessage', {
-        senderId, text, date
-      })
-    });
-  });
 

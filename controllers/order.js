@@ -10,27 +10,15 @@ const createOrder = async (req, res) => {
         const userIdSeller = data_seller.userId;
         const { userId } = data_user;
 
-        const { orderId } = await Orders.create({
-            userId, packageId, note, paymentMethod, status, revisionLeft
-        });
+        const { orderId } = await Orders.create({ userId, packageId, note, paymentMethod, status, revisionLeft });
 
-        const package = await Packages.findOne({
-            where: {
-                packageId: packageId
-            },
-            include: {
-                model: Services
-            }
-        })
+        const package = await Packages.findOne({ where: { packageId: packageId }, include: { model: Services } })
 
         const param = Parameter(orderId, paymentMethod, bankName, data_user, package);
 
-        Api.charge(param).then(async (chargeResponse)=>{
+        Api.charge(param).then(async (chargeResponse) => {
             console.log('chargeResponse:',JSON.stringify(chargeResponse));
-            await Orders.update({response: JSON.stringify(chargeResponse)},
-                { where: {
-                    orderId: orderId
-                }}); 
+            await Orders.update({response: JSON.stringify(chargeResponse)}, { where: { orderId: orderId }}); 
 
             SendNotification(userId, 1, "Order has been created! please pay first");
             SendNotification(userIdSeller, 2,  "Request Order Here!");
@@ -40,13 +28,12 @@ const createOrder = async (req, res) => {
                 data: chargeResponse
             });
         })
-        .catch((error)=>{
-            console.log(`${req.method} ${req.originalUrl} : ${error.message}`);
-            return res.status(400).json({
-                message: 'Failed to create orders',
-            });
-        });
+        .catch(async (error) => {
+            await Orders.destroy({ where: { orderId: orderId } })
 
+            console.log(`${req.method} ${req.originalUrl} : ${error.message}`);
+            return res.status(400).json({ message: 'Failed to create orders', });
+        });
     } catch (error) {
         console.log(`${req.method} ${req.originalUrl} : ${error.message}`);
         return res.status(400).json({
@@ -89,9 +76,9 @@ const getOrderUser = async (req, res) => {
             const { firstName, lastName } = order.Package.Service.Seller.User;
             const { title } = order.Package.Service;
             const { type, price } = order.Package;
-            const { note, status, revisionLeft, response, createdAt, orderId, OrderFiles, OrderNotes} = order;
+            const { note, status, revisionLeft, response, createdAt, updatedAt, delivery, orderId, OrderFiles, OrderNotes} = order;
 
-            return { orderId, firstName, lastName, title, type, price, note, status, revisionLeft, response, createdAt, OrderFiles, OrderNotes }
+            return { orderId, firstName, lastName, title, type, price, note, status, updatedAt, delivery, revisionLeft, response, createdAt, OrderFiles, OrderNotes }
         })
 
         return res.status(200).json({
@@ -338,10 +325,10 @@ const getOrderApprove = async (req, res) => {
             const { title } = order.Package.Service;
             const { image } = order.Package.Service.ServiceImages[0];
             const { type, price } = order.Package;
-            const { orderId, createdAt } = order;
+            const { orderId, updatedAt, delivery, createdAt } = order;
             const User = order.User;
 
-            return { orderId, username, firstName, lastName, title, type, price, noRekening, bankName, cardHolder, image, createdAt, User }
+            return { orderId, username, firstName, lastName, updatedAt, delivery, title, type, price, noRekening, bankName, cardHolder, image, createdAt, User }
         });
 
         return res.status(200).json({
@@ -450,9 +437,9 @@ const getOrderPending = async (req, res) => {
             const image = order.Package.Service.ServiceImages[0].image;
             const { type, delivery, revision, noOfConcept, noOfPages, maxDuration, price } = order.Package;
             const { username, firstName, lastName } = order.User
-            const { orderId, userId, note, createdAt } = order; 
+            const { orderId, userId, note, updatedAt, createdAt } = order; 
 
-            return { orderId, userId, image, username, firstName, lastName, title, type, delivery, revision, noOfConcept, noOfPages, maxDuration, price, note, createdAt }
+            return { orderId, userId, image, username, firstName, lastName, updatedAt, title, type, delivery, revision, noOfConcept, noOfPages, maxDuration, price, note, createdAt }
         });
 
         return res.status(200).json({
@@ -531,7 +518,7 @@ const progressOrder = async (req, res) => {
         const orders = await Orders.findAll({
             where: {
                 [Op.and]: [
-                    {status: {[Op.or]: ["Revising", "Working"]}}, 
+                    {status: {[Op.or]: ["Revising", "Working", "Reviewing"]}}, 
                     {packageId: {[Op.or]: packageId}}
                 ]
             },

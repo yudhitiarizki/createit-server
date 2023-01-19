@@ -4,6 +4,7 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const { SendNotification } = require('./notification');
 require('dotenv').config();
+const { Uploads } = require('../middlewares/FileUploads')
 
 const approveSeller = async (req, res) => {
     try {
@@ -314,4 +315,50 @@ const detailMySeller = async (req, res) => {
     }
 }
 
-module.exports = { Register, Login, RegSeller, getUsers, getSeller, detailSeller, detailMySeller, approveSeller, rejectSeller };
+const editProfile = async (req, res) => {
+    try {
+        const { firstName, lastName, description, photoProfile } = req.body;
+        const { userId } = data_user;
+
+        let photo = '';
+
+        if(photoProfile){
+            const upload = await Uploads(photoProfile, 'images');
+            photo = req.protocol + '://' + req.get('host') + '/' + upload;
+
+            const updateCount = await Sellers.update(
+                {firstName, lastName, description, photoProfile: photo},
+                { where: { userId: userId } }
+            );
+    
+            if (updateCount < 1){
+                return res.status(401).json({
+                    message: 'Profile not update'
+                });
+            };
+        } else {
+            const updateCount = await Sellers.update(
+                {firstName, lastName, description},
+                { where: { userId: userId } }
+            );
+    
+            if (updateCount < 1){
+                return res.status(401).json({
+                    message: 'Profile not update'
+                });
+            };
+        }
+        
+        return res.status(200).json({
+            message: 'Profile has been update'
+        }); 
+
+    } catch (error) {
+        console.log(`${req.method} ${req.originalUrl} : ${error.message}`);
+        return res.status(400).json({
+          message: 'Failed to update Seller',
+        });
+    }
+}
+
+module.exports = { Register, Login, RegSeller, getUsers, getSeller, detailSeller, detailMySeller, approveSeller, rejectSeller, editProfile };

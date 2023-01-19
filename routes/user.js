@@ -1,11 +1,11 @@
 const express = require("express");
 
 // Middleware
-const { AuthAdmin, AuthToken, AuthSellerNotVerif } = require('../middlewares/AuthLogin');
+const { AuthAdmin, AuthToken, AuthSellerNotVerif, AuthSeller } = require('../middlewares/AuthLogin');
 const { AuthReg, AuthLog, AuthRegSel } = require('../middlewares/AuthBody/UserBody');
 
 //function Routes
-const { Register, Login, RegSeller, getUsers, getSeller, detailSeller, detailMySeller, approveSeller, rejectSeller } = require('../controllers/Users');
+const { Register, Login, RegSeller, getUsers, getSeller, detailSeller, detailMySeller, approveSeller, rejectSeller, editProfile } = require('../controllers/Users');
 const RefreshToken = require('../controllers/refreshToken');
 
 const router = express.Router();
@@ -24,6 +24,6 @@ router.get('/seller/:sellerId', detailSeller);
 router.get('/seller', AuthSellerNotVerif, detailMySeller);
 router.patch('/regseller/approve', AuthAdmin, approveSeller);
 router.patch('/regseller/reject', AuthAdmin, rejectSeller);
-
+router.put('/seller', AuthSeller, editProfile);
 
 module.exports = router;

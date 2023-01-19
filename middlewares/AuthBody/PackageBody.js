@@ -7,7 +7,7 @@ const isNumeric = (str) => {
 }
 
 const AuthPackage = async (req, res, next) => {
-    var { serviceId, type, delivery, revision, noOfConcept, noOfPages, maxDuration, price } = req.body;
+    var { serviceId, type, delivery, revision, noOfConcepts, noOfPage, maxDuration, price } = req.body;
 
     
     if( type.match(RE_HTML_ERROR) ){
@@ -28,13 +28,13 @@ const AuthPackage = async (req, res, next) => {
         })
     }
     
-    if (noOfConcept && !isNumeric(noOfConcept)) {
+    if (noOfConcepts && !isNumeric(noOfConcepts)) {
         return res.status(400).json({
             message: 'Number of Concept must number!'
         })
     }
 
-    if (noOfPages && !isNumeric(noOfPages)) {
+    if (noOfPage && !isNumeric(noOfPage)) {
         return res.status(400).json({
             message: 'Number of Pages must number!'
         })
@@ -52,7 +52,7 @@ const AuthPackage = async (req, res, next) => {
         })
     }
 
-    data_package = { serviceId, type, delivery, revision, noOfConcept, noOfPages, maxDuration, price };
+    data_package = { serviceId, type, delivery, revision, noOfConcepts, noOfPage, maxDuration, price };
 
     next();
 }

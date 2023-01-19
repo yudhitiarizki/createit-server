@@ -2,10 +2,10 @@ const { Packages, Services } = require('../models');
 
 const createPackage = async (req, res) => {
     try {
-        const { serviceId, type, delivery, revision, noOfConcept, noOfPages, maxDuration, price } = data_package;
+        const { serviceId, type, delivery, revision, noOfConcepts, noOfPage, maxDuration, price } = data_package;
 
         await Packages.create({
-            serviceId, type, delivery, revision, noOfConcept, noOfPages, maxDuration, price
+            serviceId, type, delivery, revision, noOfConcepts, noOfPage, maxDuration, price
         })
 
         return res.status(200).json({
@@ -44,12 +44,12 @@ const getPackage = async (req, res) => {
 
 const updatePackage = async (req, res) => {
     try {
-        const { serviceId, type, delivery, revision, noOfConcept, noOfPages, maxDuration, price } = data_package;
+        const { serviceId, type, delivery, revision, noOfConcepts, noOfPage, maxDuration, price } = data_package;
         const { packageId } = req.params;
 
 
         const updateCount = await Packages.update(
-            {serviceId, type, delivery, revision, noOfConcept, noOfPages, maxDuration, price},
+            {serviceId, type, delivery, revision, noOfConcepts, noOfPage, maxDuration, price},
             { where: {
                 packageId: packageId
             }})
