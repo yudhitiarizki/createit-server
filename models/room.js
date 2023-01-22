@@ -11,12 +11,10 @@ module.exports = (sequelize, DataTypes) => {
      */
     static associate(models) {
       Rooms.hasMany(models.RoomParticipants, {
-        foreignKey: 'roomId',
-        onDelete: 'CASCADE'
+        foreignKey: 'roomId'
       });
       Rooms.hasMany(models.Messages, {
-        foreignKey: 'roomId',
-        onDelete: 'CASCADE'
+        foreignKey: 'roomId'
       });
     }
   }

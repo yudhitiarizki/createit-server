@@ -156,7 +156,7 @@ const approveOrder = async (req, res) => {
             });
         };
 
-        SendNotification(1, 3, "Buyer finished it's order. Please transfer the money to seller.");
+        SendNotification(2, 3, "Buyer finished it's order. Please transfer the money to seller.");
 
         res.status(200).json({
             message: 'Order Approved'

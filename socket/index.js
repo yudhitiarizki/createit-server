@@ -1,15 +1,16 @@
 let users = [];
 
 const addUser = (userId, socketId) => {
-  !users.some(user=> user.userId === userId) && users.push({userId, socketId});
+    let index = users.findIndex(item => item.userId === userId);
+    index !== -1 ? users.splice(index, 1, {userId, socketId}) : users.push({userId, socketId});
 }
 
 const removeUser = (socketId) => {
-  users = users.filter(user => user.socketId !== socketId);
+    users = users.filter(user => user.socketId !== socketId);
 }
 
 const getUser = userId => {
-  return users.find(user => user.userId === userId)
+    return users.find(user => user.userId === userId)
 }
 
 module.exports = (io) => {
@@ -30,16 +31,21 @@ module.exports = (io) => {
         // Handle event from client
         socket.on('sendMessage', ({senderId, reseiverId, text, date}) => {
             const user = getUser(reseiverId);
-            io.to(user.socketId).emit('getMessage', {
-                senderId, text, date
-            });
+            if (user){
+                io.to(user.socketId).emit('getMessage', {
+                    senderId, text, date
+                });
+            }
         });
 
         socket.on('sendChat', ({ userId, roomId, message, receiverId, date }) => {
             const user = getUser(receiverId);
-            io.to(user.socketId).emit('getChat', {
-                userId, roomId, message, date
-            });
+            if (user){
+                io.to(user.socketId).emit('getChat', {
+                    userId, roomId, message, date
+                });
+            }
+            
         });
     });
 }
